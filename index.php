@@ -1,0 +1,258 @@
+<?php
+// Arquivo: index.html
+require_once 'conexao.php'; 
+// A variável $status_conexao está agora definida.
+?>
+<!DOCTYPE html>
+<html LANG="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Histórico de Eventos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* GARANTE QUE O FUNDO SE EXPANDA */
+        html,
+        body {
+            height: 100%;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            /* Essencial para pseudo-elementos */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+            /* 2. Aplica a Imagem e a Suavização AQUI */
+            background-image: url('claro.png');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+
+            /* 3. Aplica a transparência SÓ NA IMAGEM, não no texto */
+            opacity: 0.2;
+            filter: grayscale(80%);
+
+            /* 4. Coloca a imagem ATRÁS do conteúdo */
+            z-index: -1;
+        }
+
+        /* 🌟 CSS ADICIONAL PARA ESTILIZAR E CENTRALIZAR O CONTEÚDO 🌟 */
+        .login-container {
+            max-width: 350px;
+            margin: 0 auto;
+            /* CENTRALIZAÇÃO HORIZONTAL */
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fundo semi-transparente */
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-top: 50px;
+        }
+
+        .login-container p {
+            color: #020202;
+            /* Garante que o texto seja PRETO */
+            margin-bottom: 15px;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Estilos de Formulário */
+        /* Estilos de Formulário */
+        h1 {
+            /* CENTRALIZAÇÃO PADRÃO */
+            text-align: center;
+
+            /* TIPOGRAFIA MODERNA */
+            font-size: 1.8em;
+            /* Levemente menor que o tamanho padrão do h1 */
+            font-weight: 600;
+            /* Semi-negrito, mais suave que bold (700) */
+            color: #333;
+            /* Cinza escuro suave */
+            letter-spacing: 0.5px;
+            /* Espaçamento sutil */
+            margin-bottom: 0;
+            /* Remove a margem inferior padrão */
+            padding-bottom: 10px;
+            /* Adiciona espaço para o sublinhado */
+            position: relative;
+            /* Contexto para o ::after */
+        }
+
+        /* Efeito Sublinhado Decorativo (Linha Moderna) */
+        h1::after {
+            content: '';
+            display: block;
+            width: 250px;
+            /* Largura da linha */
+            height: 3px;
+            background-color: #007bff;
+            /* Cor primária vibrante */
+            margin: 8px auto 0;
+            /* Centraliza a linha e a afasta do texto */
+            border-radius: 2px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        form {
+            font-weight: bold;
+            margin-top: 5px;
+            padding: 10px;
+            margin-bottom: 10px
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        /* 1. Estilo Básico do Botão (Obrigatório) */
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            /* Azul primário */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            /* Transição suave para o efeito hover */
+            width: 100%;
+            margin-top: 15px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        /* 2. Estilo Hover (Efeito) */
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+            /* Azul mais escuro no hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* Sombra para dar profundidade */
+        }
+
+        .alerta-erro {
+            color: red;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .link-cadastro {
+            color: #007bff;
+            /* Cor principal (azul) */
+            text-decoration: none;
+            /* Remove o sublinhado padrão */
+            font-weight: bold;
+            /* Deixa o texto em negrito */
+
+            /* Adiciona uma transição suave para que o efeito não seja abrupto */
+            transition: color 0.2s ease, text-decoration 0.2s ease;
+        }
+
+        /* 2. Estilos para o Hover */
+        .link-cadastro:hover {
+            color: #dc3545;
+            /* Mude para uma cor de destaque (vermelho) no hover */
+            text-decoration: underline;
+            /* Faz o sublinhado aparecer no hover */
+        }
+        .link-cadastro-usuario,
+        .link-forgot-usuario {
+            color: #007bff;
+            /* Cor principal (azul) */
+            text-decoration: none;
+            /* Remove o sublinhado padrão */
+            font-weight: bold;
+            /* Deixa o texto em negrito */
+            
+            /* Adiciona uma transição suave para que o efeito não seja abrupto */
+            text-align: left;
+            transition: color 0.2s ease, text-decoration 0.2s ease;
+        }
+
+        /* 2. Estilos para o Hover */
+        .link-cadastro-usuario:hover,
+        .link-forgot-usuario:hover {
+            color: #09f030ff;
+            /* Mude para uma cor de destaque (vermelho) no hover */
+            text-decoration: underline;
+            /* Faz o sublinhado aparecer no hover */
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <p style="font-weight: bold; padding: 10px; color: #333; ">
+            <?php echo $status_conexao; ?>
+        </p>
+        
+        <h1>Acessar a conta</h1>
+        <form action="validar_login.php" method="POST">
+            <label for="usuario">Login:</label>
+            <input type="text" id="usuario" name="login" required><br><br>
+
+            <label for="pswd">Senha:</label>
+            <input type="password" id="pswd" name="pswd" required><br><br>
+
+
+            <button type="submit">Entrar</button>
+            
+            <p style="text-align: center; margin-top: 15px;">
+                Criar uma nova conta:
+                <a href="cadastro_usuario.php" class="link-cadastro-usuario">Criar Conta</a>
+                </p>
+                <p style="text-align: center; margin-top: 5px;">
+                Redefinir senha:
+                <a href="forgot_password.php" class="link-forgot-usuario">Esqueci Minha Senha</a> 
+                 </p>
+        </form>
+
+        <div id="alerta-erro" style="color: red; margin-top: 10px; font-weight: bold;"></div>
+
+        <script>
+            // ... script JavaScript de leitura da URL (mantido inalterado) ...
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.has('erro')) {
+                const codigoErro = params.get('erro');
+                let mensagem = "";
+                const alertaDiv = document.getElementById('alerta-erro');
+
+                if (codigoErro === '1') {
+                    mensagem = "Erro: Usuário ou senha inválidos.";
+                } else if (codigoErro === '3') {
+                    mensagem = "Erro Crítico: Falha na conexão com o BD.";
+                } else if (codigoErro === '2') {
+                    mensagem = "Erro: Por favor, preencha todos os campos.";
+                }
+
+                alertaDiv.innerHTML = mensagem;
+            }
+        </script>
+    </div>
+</body>
+
+</html>
