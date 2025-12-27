@@ -12,9 +12,9 @@ use PHPMailer\PHPMailer\SMTP;
  * No Render (Linux), os caminhos diferenciam maiúsculas de minúsculas.
  * Se você subiu a pasta como 'PHPMailer' na raiz, use o caminho abaixo:
  */
-require 'vendor/phpmailer/phpmailer/src/Exception.php';
-require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+require '/vendor/phpmailer/phpmailer/src/Exception.php';
+require '/vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require '/vendor/phpmailer/phpmailer/src/SMTP.php';
 
 // Verifica se a conexão PDO está ativa
 if (!$pdo) {
@@ -114,4 +114,5 @@ try {
 header("Location: forgot_password.php?status=sucesso");
 exit;
 ?>
+
 
