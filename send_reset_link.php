@@ -44,14 +44,14 @@ try {
 
         // 4. CONFIGURAÇÃO DE CONEXÃO (Ajustada para o Render)
         $mail->isSMTP();
-        $mail->Host       = 'smtps.uol.com.br'; // Caso falhe, tente 'smtp.uol.com.br'
+        $mail->Host       = 'smtp.gmail.com';  
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'gr.oshiro@uol.com.br'; 
-        $mail->Password   = getenv('SMTP_PASS') ?: '2735lubi'; 
+        $mail->Username   = 'groshiro@gmail.com.br'; 
+        $mail->Password   = getenv('SMTP_PASS') ?: '2735*lubichloe*'; 
         
         // MUDANÇA PARA PORTA 465 (Geralmente aberta no Render)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
-        $mail->Port       = 465; 
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
+        $mail->Port       = 587; 
         $mail->Timeout    = 20; // Aumenta o tempo de espera
         $mail->CharSet    = 'UTF-8';
 
@@ -84,3 +84,4 @@ try {
     echo "Erro PHPMailer: " . $mail->ErrorInfo;
     exit; 
 }
+
