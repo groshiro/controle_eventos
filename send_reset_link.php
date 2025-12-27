@@ -10,11 +10,13 @@ use PHPMailer\PHPMailer\SMTP;
 /**
  * 1. AJUSTE DE AUTOLOAD MANUAL
  * No Render (Linux), os caminhos diferenciam maiúsculas de minúsculas.
- * Se você subiu a pasta como 'PHPMailer' na raiz, use o caminho abaixo:
+* No Render/Docker, seus arquivos ficam em /var/www/html/
  */
-require '/vendor/phpmailer/phpmailer/src/Exception.php';
-require '/vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require '/vendor/phpmailer/phpmailer/src/SMTP.php';
+$base_path = '/var/www/html//vendor/phpmailer/phpmailer/src/';
+
+require $base_path . 'Exception.php';
+require $base_path . 'PHPMailer.php';
+require $base_path . 'SMTP.php'; 
 
 // Verifica se a conexão PDO está ativa
 if (!$pdo) {
@@ -114,5 +116,6 @@ try {
 header("Location: forgot_password.php?status=sucesso");
 exit;
 ?>
+
 
 
