@@ -5,7 +5,7 @@
  * 1. OBTENÇÃO DOS DADOS
  * Prioriza variáveis de ambiente (Render/Docker) e usa os seus dados como fallback.
  */
-$host = getenv('DB_HOST') ?: 'dpg-d4rrpu24d50c73b2ia50-a.virginia-postgres.render.com';
+$host = getenv('DB_HOST') ?: 'dpg-d4rrpu24d50c73b2ia50-a';
 $port = getenv('DB_PORT') ?: '5432';
 $dbname = getenv('DB_NAME') ?: 'claro_7re0';
 $user = getenv('DB_USER') ?: 'usuario';
@@ -37,3 +37,4 @@ try {
     // Mensagem simplificada para o usuário final
     $status_conexao = "❌ Erro técnico ao conectar ao banco de dados.";
 }
+
