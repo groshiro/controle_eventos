@@ -12,7 +12,11 @@ use PHPMailer\PHPMailer\SMTP;
  * No Render (Linux), os caminhos diferenciam maiúsculas de minúsculas.
 * No Render/Docker, seus arquivos ficam em /var/www/html/
  */
-$base_path = __DIR__ . '/PHPMailer/src/';
+$base_path = '/var/www/html/PHPMailer/src/';
+
+if (!file_exists($base_path . 'Exception.php')) {
+    die("❌ Erro: A pasta PHPMailer não foi encontrada na raiz do GitHub.");
+}
 
 require $base_path . 'Exception.php';
 require $base_path . 'PHPMailer.php';
@@ -116,6 +120,7 @@ try {
 header("Location: forgot_password.php?status=sucesso");
 exit;
 ?>
+
 
 
 
