@@ -120,11 +120,13 @@ try {
     header("Location: forgot_password.php?status=erro_bd");
     exit;
 } catch (Exception $e) {
-    // O motivo real do erro de e-mail aparecerá na aba Logs do Render
-    error_log("❌ Erro PHPMailer: " . $mail->ErrorInfo);
-    header("Location: forgot_password.php?status=erro_email");
-    exit;
+    // Isso vai parar o redirecionamento e imprimir o erro real na tela
+    echo "<h1>Erro Técnico Detalhado:</h1>";
+    echo "Mensagem: " . $e->getMessage() . "<br>";
+    echo "Erro do PHPMailer: " . $mail->ErrorInfo;
+    exit; // Impede o redirecionamento para podermos ler
 }
+
 
 
 
