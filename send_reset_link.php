@@ -2,7 +2,7 @@
 // Arquivo: send_reset_link.php
 require_once 'conexao.php';
 
-// 1. Configurações de Log (Ver erros na aba Logs do Render)
+// 1. Configurações de Log (O erro detalhado aparecerá na aba Logs do Render)
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
@@ -11,12 +11,12 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 
-// 2. Ajuste de Caminho para PHPMailer (Compatível com Linux/Render)
+// 2. Ajuste de Caminho (Garante que o Render ache a pasta no Linux)
 $base_path = __DIR__ . '/PHPMailer/src/';
 
 if (!file_exists($base_path . 'Exception.php')) {
     error_log("❌ Erro Crítico: Pasta PHPMailer não encontrada em: " . $base_path);
-    die("Erro de configuração interna. Verifique os logs do servidor.");
+    die("Erro de configuração interna.");
 }
 
 require $base_path . 'Exception.php';
@@ -36,19 +36,18 @@ if (empty($email)) {
 }
 
 try {
-    // 3. Busca o usuário pelo e-mail
+    // 3. Busca o usuário
     $sql_usuario = "SELECT id, nome FROM usuario WHERE email = :email";
     $stmt = $pdo->prepare($sql_usuario);
     $stmt->execute(['email' => $email]);
     $usuario = $stmt->fetch();
 
     if ($usuario) {
-        // 4. Geração do Token Seguro
         $token = bin2hex(random_bytes(32)); 
         $token_hash = hash('sha256', $token);
         $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-        // 5. Salva o Token no Banco (PostgreSQL do Render)
+        // 4. Salva o Token no Banco
         $sql_update = "UPDATE usuario 
                        SET reset_token = :token_hash, 
                            token_expires_at = :expires_at 
@@ -60,27 +59,28 @@ try {
             'id' => $usuario['id']
         ]);
         
-        // 6. Construção da URL (HTTPS automático no Render)
+        // 5. URL com HTTPS para o Render
         $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
         $url_base = $protocol . $_SERVER['HTTP_HOST'] . "/"; 
         $link_reset = $url_base . "reset_password.php?token=" . $token . "&email=" . urlencode($email);
 
-        // 7. Configuração do PHPMailer
         $mail = new PHPMailer(true);
+
+        // 6. Configuração SMTP para UOL no Render
         $mail->isSMTP();
         $mail->Host       = 'smtps.uol.com.br'; 
         $mail->SMTPAuth   = true;
         $mail->Username   = 'gr.oshiro@uol.com.br'; 
         
-        // Pega a senha configurada no painel do Render (Environment Variables)
+        // Importante: Pega a senha do painel Environment do Render
         $mail->Password   = getenv('SMTP_PASS') ?: '2735lubi'; 
         
-        // Configuração de Segurança para Porta 465 (Recomendado para UOL no Render)
+        // Uso da Porta 465 com SMTPS (mais resiliente em servidores Cloud)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
         $mail->Port       = 465; 
         $mail->CharSet    = 'UTF-8';
 
-        // Bypass de verificação de SSL (Evita erros de certificado no Render)
+        // Opções extras para evitar erro de certificado SSL no Render
         $mail->SMTPOptions = array(
             'ssl' => array(
                 'verify_peer' => false,
@@ -89,48 +89,42 @@ try {
             )
         );
 
-        // --- REMETENTE E DESTINATÁRIO ---
+        // Remetente e Destinatário
         $mail->setFrom('gr.oshiro@uol.com.br', 'Sistema de Controle');
         $mail->addAddress($email, $usuario['nome']); 
         
-        // --- CONTEÚDO DO E-MAIL ---
         $mail->isHTML(true);
         $mail->Subject = 'Redefinição de Senha - Sistema de Controle';
         $mail->Body    = "
             <html>
-            <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
-                <h2 style='color: #333;'>Olá, {$usuario['nome']}!</h2>
-                <p>Recebemos uma solicitação para redefinir a sua senha. Este link expirará em 1 hora.</p>
+            <body style='font-family: sans-serif;'>
+                <h2>Olá, {$usuario['nome']}!</h2>
+                <p>Você solicitou a redefinição de senha. O link abaixo expirará em 1 hora.</p>
                 <div style='margin: 30px 0;'>
                     <a href='{$link_reset}' style='background-color:#f70b0b; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; font-weight:bold;'>
                         Criar Nova Senha
                     </a>
                 </div>
-                <p style='font-size: 12px; color: #666;'>Se você não solicitou esta alteração, ignore este e-mail.</p>
+                <p style='font-size: 12px; color: #666;'>Se você não solicitou, ignore este e-mail.</p>
             </body>
             </html>";
             
         $mail->send();
     }
 
-    // Redireciona para sucesso mesmo se o usuário não existir (evita descoberta de e-mails)
     header("Location: forgot_password.php?status=sucesso");
     exit;
 
 } catch (PDOException $e) {
-    error_log("❌ Erro de Banco de Dados: " . $e->getMessage());
+    error_log("❌ Erro BD: " . $e->getMessage());
     header("Location: forgot_password.php?status=erro_bd");
     exit;
 } catch (Exception $e) {
-    // Se o PHPMailer falhar, o motivo real aparecerá na aba Logs do Render
+    // O motivo real do erro de e-mail aparecerá na aba Logs do Render
     error_log("❌ Erro PHPMailer: " . $mail->ErrorInfo);
     header("Location: forgot_password.php?status=erro_email");
     exit;
 }
-
-
-
-
 
 
 
