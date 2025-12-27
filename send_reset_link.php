@@ -2,8 +2,16 @@
 // Arquivo: send_reset_link.php
 require_once 'conexao.php';
 
-// 1. Configurações
-$apiKey = 're_8hatntgm_6dRKzQkjhD49ta2exp6vMKqE'; // Começa com re_...
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
+// Ajuste de caminho para o PHPMailer no Render
+$base_path = __DIR__ . '/PHPMailer/src/';
+require $base_path . 'Exception.php';
+require $base_path . 'PHPMailer.php';
+require $base_path . 'SMTP.php';
+
 $email_destino = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 
 if (empty($email_destino)) {
@@ -12,7 +20,6 @@ if (empty($email_destino)) {
 }
 
 try {
-    // 2. Busca usuário no banco
     $stmt = $pdo->prepare("SELECT id, nome FROM usuario WHERE email = :email");
     $stmt->execute(['email' => $email_destino]);
     $usuario = $stmt->fetch();
@@ -28,35 +35,42 @@ try {
         $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
         $link_reset = $protocol . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=" . $token . "&email=" . urlencode($email_destino);
 
-        // 3. ENVIO VIA API DO RESEND (Nunca bloqueia no Render)
-        $data = [
-            "from" => "onboarding@resend.dev", // Use este remetente padrão para testes
-            "to" => [$email_destino],
-            "subject" => "Redefinição de Senha",
-            "html" => "<h2>Olá {$usuario['nome']}!</h2><p>Clique no link para resetar sua senha:</p><a href='{$link_reset}'>{$link_reset}</a>"
-        ];
+        $mail = new PHPMailer(true);
 
-        $ch = curl_init('https://api.resend.com/emails');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $apiKey,
-            'Content-Type: application/json'
-        ]);
+        // --- CONFIGURAÇÃO GMAIL ---
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'groshiro@gmail.com'; // Seu Gmail (sem o .br)
+        $mail->Password   = getenv('SMTP_PASS') ?: '2735*lubichloe*'; 
+        
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // SSL direto
+        $mail->Port       = 465;                         // Porta SSL
+        $mail->CharSet    = 'UTF-8';
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // Bypass de Certificado (Evita erro de Time Out no Render)
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
 
-        if ($httpCode !== 200 && $httpCode !== 201) {
-             error_log("Erro Resend API: " . $response);
-        }
+        $mail->setFrom('groshiro@gmail.com', 'Sistema de Controle');
+        $mail->addAddress($email_destino, $usuario['nome']); 
+        
+        $mail->isHTML(true);
+        $mail->Subject = 'Redefinição de Senha';
+        $mail->Body    = "Olá {$usuario['nome']},<br>Clique no link para resetar sua senha: <a href='{$link_reset}'>{$link_reset}</a>";
+            
+        $mail->send();
     }
 
     header("Location: forgot_password.php?status=sucesso");
     exit;
 
 } catch (Exception $e) {
-    die("Erro interno: " . $e->getMessage());
+    // Se der erro, mostra na tela para diagnosticar
+    echo "Erro técnico: " . $mail->ErrorInfo;
 }
