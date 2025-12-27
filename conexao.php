@@ -31,10 +31,8 @@ try {
 
 } catch (PDOException $e) {
     $pdo = null;
-    // Registra o erro detalhado nos logs do Render/Docker para você depurar
-    error_log("Erro na conexão PostgreSQL: " . $e->getMessage());
-    
-    // Mensagem simplificada para o usuário final
-    $status_conexao = "❌ Erro técnico ao conectar ao banco de dados.";
+    // ISSO VAI MOSTRAR O ERRO REAL NA TELA PARA TESTE
+    die("Erro real: " . $e->getMessage()); 
 }
+
 
