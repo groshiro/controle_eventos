@@ -12,11 +12,9 @@ use PHPMailer\PHPMailer\SMTP;
  * No Render (Linux), os caminhos diferenciam maiúsculas de minúsculas.
 * No Render/Docker, seus arquivos ficam em /var/www/html/
  */
-$base_path = '/var/www/html//vendor/phpmailer/phpmailer/src/';
-
-require $base_path . 'Exception.php';
-require $base_path . 'PHPMailer.php';
-require $base_path . 'SMTP.php'; 
+require __DIR__ . '/phpmailer/src/Exception.php';
+require __DIR__ . '/phpmailer/src/PHPMailer.php';
+require __DIR__ . '/phpmailer/src/SMTP.php';
 
 // Verifica se a conexão PDO está ativa
 if (!$pdo) {
@@ -116,6 +114,7 @@ try {
 header("Location: forgot_password.php?status=sucesso");
 exit;
 ?>
+
 
 
 
