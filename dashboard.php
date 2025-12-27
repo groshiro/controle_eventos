@@ -170,10 +170,10 @@ try {
             var options = {
                 width: 400, height: 120,
                 redFrom: 0, redTo: 3000, // Zona vermelha (poucos incidentes)
-                yellowFrom: 3001, yellowTo: 8000, // Zona amarela
-                greenFrom: 8001, greenTo: 20000, // Zona verde (meta de 20000)
+                yellowFrom: 3001, yellowTo: 10000, // Zona amarela
+                greenFrom: 10001, greenTo: 25000, // Zona verde (meta de 25000)
                 minorTicks: 5,
-                max: 20000 // Escala máxima do seu medidor
+                max: 25000 // Escala máxima do seu medidor
             };
 
             var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
@@ -182,33 +182,65 @@ try {
     </script>
    <style>
 /* ======================================================= */
-/* 1. ESTILOS GLOBAIS E MARCA D'ÁGUA (BODY) */
+/* 1. ESTILOS GLOBAIS E FUNDO ANIMADO */
 /* ======================================================= */
 
-    body {
-        position: relative; 
-        z-index: 1; 
-        background-color: #f4f4f9;
-    }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    position: relative;
+    min-height: 100vh;
+}
 
-    body::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        
-        /* Marca D'Água */
-        background-image: url('claro-operadora.jpg');
-        background-size: cover; 
-        background-position: center center;
-        background-repeat: no-repeat;
-        
-        opacity: 0.08; 
-        filter: grayscale(80%); 
-        z-index: -1;
-    }
+/* Camada 1: Marca d'água Fixa */
+body::before {
+    content: "";
+    position: fixed; /* Mantém a imagem fixa ao rolar */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('claro-operadora.jpg'); /* Verifique se o nome é este ou claro.png */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.15; /* Sutil para não atrapalhar a tabela */
+    filter: grayscale(50%);
+    z-index: -3;
+}
+
+/* Camada 2: Gradiente de Malha Animado (Cores Suaves) */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(0, 123, 255, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(220, 53, 69, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 123, 255, 0.02) 0%, transparent 60%);
+    filter: blur(80px);
+    animation: moveColors 25s ease-in-out infinite alternate;
+}
+
+@keyframes moveColors {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-2%, 2%) scale(1.05); }
+    100% { transform: translate(2%, -2%) scale(1); }
+}
+
+/* Ajuste de Transparência das Tabelas para o efeito Glassmorphism */
+table, .user-table {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
 
     .header {
         color: black; 
@@ -312,7 +344,7 @@ try {
         background-color: #0b34ebff;
         color: white;
         text-decoration: none; 
-        border-radius: 5px;
+        border-radius: 8px;
         border: black 2px solid;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         font-size: 16px;
