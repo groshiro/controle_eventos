@@ -74,9 +74,9 @@ try {
         $mail->Username   = 'gr.oshiro@uol.com.br'; 
         $mail->Password   = getenv('SMTP_PASS') ?: '2735lubi'; 
         
-        // STARTTLS na 587 é a configuração padrão recomendada
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
-        $mail->Port       = 587; 
+        // SMTPS PORTA 465
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Usa SSL Direto
+        $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
 
         // --- REMETENTE E DESTINATÁRIO ---
@@ -116,6 +116,7 @@ try {
     header("Location: forgot_password.php?status=erro_email");
     exit;
 }
+
 
 
 
