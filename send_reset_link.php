@@ -46,7 +46,7 @@ try {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';  
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'groshiro@gmail.com.br'; 
+        $mail->Username   = 'groshiro@gmail.com'; 
         $mail->Password   = getenv('SMTP_PASS') ?: '2735*lubichloe*'; 
         
         // MUDANÇA PARA PORTA 465 (Geralmente aberta no Render)
@@ -84,4 +84,5 @@ try {
     echo "Erro PHPMailer: " . $mail->ErrorInfo;
     exit; 
 }
+
 
