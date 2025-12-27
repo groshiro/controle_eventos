@@ -2,31 +2,19 @@
 // Arquivo: send_reset_link.php
 require_once 'conexao.php';
 
-// 1. Logs de Erro
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// 1. Configurações
+$apiKey = 're_8hatntgm_6dRKzQkjhD49ta2exp6vMKqE'; // Começa com re_...
+$email_destino = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP;
-
-// 2. Carregamento Manual (Caminho absoluto do Render)
-$base_path = __DIR__ . '/PHPMailer/src/';
-require $base_path . 'Exception.php';
-require $base_path . 'PHPMailer.php';
-require $base_path . 'SMTP.php';
-
-$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-
-if (empty($email)) {
+if (empty($email_destino)) {
     header("Location: forgot_password.php");
     exit;
 }
 
 try {
-    // 3. Busca usuário
+    // 2. Busca usuário no banco
     $stmt = $pdo->prepare("SELECT id, nome FROM usuario WHERE email = :email");
-    $stmt->execute(['email' => $email]);
+    $stmt->execute(['email' => $email_destino]);
     $usuario = $stmt->fetch();
 
     if ($usuario) {
@@ -38,52 +26,37 @@ try {
         $stmt->execute([$token_hash, $expires_at, $usuario['id']]);
         
         $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
-        $link_reset = $protocol . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=" . $token . "&email=" . urlencode($email);
+        $link_reset = $protocol . $_SERVER['HTTP_HOST'] . "/reset_password.php?token=" . $token . "&email=" . urlencode($email_destino);
 
-        $mail = new PHPMailer(true);
+        // 3. ENVIO VIA API DO RESEND (Nunca bloqueia no Render)
+        $data = [
+            "from" => "onboarding@resend.dev", // Use este remetente padrão para testes
+            "to" => [$email_destino],
+            "subject" => "Redefinição de Senha",
+            "html" => "<h2>Olá {$usuario['nome']}!</h2><p>Clique no link para resetar sua senha:</p><a href='{$link_reset}'>{$link_reset}</a>"
+        ];
 
-        // 4. CONFIGURAÇÃO DE CONEXÃO (Ajustada para o Render)
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';  
-        $mail->SMTPAuth   = true;
-        // ATENÇÃO: Verifique se o seu e-mail não tem o ".br" no final (Gmail comum é apenas .com)
-        $mail->Username   = 'groshiro@gmail.com'; 
-        $mail->Password   = getenv('SMTP_PASS') ?: '2735*lubichloe*'; 
-        
-        // MUDANÇA PARA PORTA 465 COM SSL
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
-        $mail->Port       = 465; 
-        $mail->Timeout    = 20;
+        $ch = curl_init('https://api.resend.com/emails');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $apiKey,
+            'Content-Type: application/json'
+        ]);
 
-        // 5. BYPASS DE CERTIFICADO SSL (Evita o erro de Time Out no Docker)
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-        $mail->setFrom('gr.oshiro@uol.com.br', 'Sistema de Controle');
-        $mail->addAddress($email, $usuario['nome']); 
-        
-        $mail->isHTML(true);
-        $mail->Subject = 'Redefinição de Senha';
-        $mail->Body    = "Olá {$usuario['nome']}, seu link: <a href='{$link_reset}'>{$link_reset}</a>";
-            
-        $mail->send();
+        if ($httpCode !== 200 && $httpCode !== 201) {
+             error_log("Erro Resend API: " . $response);
+        }
     }
 
     header("Location: forgot_password.php?status=sucesso");
     exit;
 
 } catch (Exception $e) {
-    // Exibe o erro técnico para sabermos se o Time Out sumiu
-    echo "<h1>Diagnóstico de Conexão:</h1>";
-    echo "Mensagem: " . $e->getMessage() . "<br>";
-    echo "Erro PHPMailer: " . $mail->ErrorInfo;
-    exit; 
+    die("Erro interno: " . $e->getMessage());
 }
-
-
-
