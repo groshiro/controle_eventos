@@ -46,14 +46,14 @@ try {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';  
         $mail->SMTPAuth   = true;
+        // ATENÇÃO: Verifique se o seu e-mail não tem o ".br" no final (Gmail comum é apenas .com)
         $mail->Username   = 'groshiro@gmail.com'; 
         $mail->Password   = getenv('SMTP_PASS') ?: '2735*lubichloe*'; 
         
-        // MUDANÇA PARA PORTA 465 (Geralmente aberta no Render)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
-        $mail->Port       = 587; 
-        $mail->Timeout    = 20; // Aumenta o tempo de espera
-        $mail->CharSet    = 'UTF-8';
+        // MUDANÇA PARA PORTA 465 COM SSL
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
+        $mail->Port       = 465; 
+        $mail->Timeout    = 20;
 
         // 5. BYPASS DE CERTIFICADO SSL (Evita o erro de Time Out no Docker)
         $mail->SMTPOptions = array(
@@ -84,5 +84,6 @@ try {
     echo "Erro PHPMailer: " . $mail->ErrorInfo;
     exit; 
 }
+
 
 
