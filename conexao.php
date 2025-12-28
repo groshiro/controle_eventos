@@ -27,7 +27,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 
-    $status_conexao = "✅ Conectado ao banco do Render com sucesso!";
+    $status_conexao = "✅ Connected!";
 
 } catch (PDOException $e) {
     $pdo = null;
@@ -37,6 +37,7 @@ try {
     // Mensagem simplificada para o usuário final
     $status_conexao = "❌ Erro técnico ao conectar ao banco de dados.";
 }
+
 
 
 
