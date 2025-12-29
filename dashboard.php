@@ -49,7 +49,7 @@ if (!isset($_SESSION['usuario_logado'])) {
 $lista_incidentes = [];
 
 // Configurações da Paginação
-$limite_por_pagina = 600; // Define o número de registros por página
+$limite_por_pagina = 1000; // Define o número de registros por página
 $pagina_atual = $_GET['pagina'] ?? 1; // Pega a página da URL, padrão é 1
 
 // Calcula o OFFSET (onde começar a consulta):
@@ -791,4 +791,5 @@ table, .user-table {
     </script>
  </div>
 </body>
+
 </html>
