@@ -636,8 +636,8 @@ table, .user-table {
             // Exemplo de saída: "3 resultados encontrados para 'Alice'"
             echo $total_encontrado . " Resultados encontrados para: \"" . htmlspecialchars($termo_exibido) . "\"";
         } else {
-            // Exemplo de saída: "Exibindo 15 Usuários Cadastrados"
-            echo "Total de Incidentes Cadastrados: " . $total_encontrado;
+            // Exemplo de saída: "Exibindo 15 Incidentes Cadastrados"
+            echo "Total de Incidentes Cadastrados por Página: " . $total_encontrado;
         }
     ?>
     </div>
@@ -793,4 +793,5 @@ table, .user-table {
 </body>
 
 </html>
+
 
