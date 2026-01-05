@@ -5,18 +5,14 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 $alerta_erro = null;
-
-// Verifica se há um erro de permissão armazenado na sessão
 if (isset($_SESSION['alerta_erro']) && !empty($_SESSION['alerta_erro'])) {
     $alerta_erro = $_SESSION['alerta_erro'];
     unset($_SESSION['alerta_erro']); 
 }
 
-// Força a exibição de erros (para depuração)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// 2. INCLUI A CONEXÃO COM O BANCO DE DADOS
 require_once 'conexao.php'; 
 
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado']; 
@@ -54,9 +50,14 @@ try {
 
     $sql_consulta = "SELECT id, data_cadastro, incidente, evento, endereco, area, regiao, site, otdr FROM controle" . $where_clause . " ORDER BY id LIMIT :limite OFFSET :offset";
     $stmt_consulta = $pdo->prepare($sql_consulta);
-    $params['limite'] = $limite_por_pagina;
-    $params['offset'] = $offset;
-    $stmt_consulta->execute($params);
+
+    $stmt_consulta->bindValue(':limite', (int)$limite_por_pagina, PDO::PARAM_INT);
+    $stmt_consulta->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+    if (!empty($termo_busca)) {
+        $stmt_consulta->bindValue(':termo', $termo_sql);
+    }
+
+    $stmt_consulta->execute();
     $lista_incidentes = $stmt_consulta->fetchAll();
     $total_encontrado = count($lista_incidentes);
 
@@ -107,7 +108,7 @@ try {
         }
     </script>
     <style>
-        /* CSS DA AMPULHETA */
+        /* ESTILO DA AMPULHETA (LOADER) */
         #loader-overlay {
             display: none;
             position: fixed;
@@ -123,13 +124,11 @@ try {
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .texto-loader { margin-top: 15px; font-weight: bold; color: #e02810; }
 
-        /* Estilo para Mensagens de Status (PHP) */
-        .status-msg {
-            max-width: 600px; margin: 10px auto; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold;
-        }
+        /* Mensagens de Confirmação */
+        .status-msg { max-width: 600px; margin: 10px auto; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; }
         .status-sucesso { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-        /* SEUS ESTILOS ORIGINAIS */
+        /* SEUS ESTILOS ORIGINAIS MANTIDOS */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; position: relative; min-height: 100vh; }
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -150,8 +149,9 @@ try {
         h3 { display: inline-block; color: #235303ff; text-decoration: underline; margin-top: 0; padding: 10px; }
         p { font-size: 18px; text-align: center; font-weight: bold; }
         .btn-pesquisar, .btn-page { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; }
-        .btn-page { display: inline-block; padding: 8px 12px; margin: 0 5px; text-decoration: none; color: #007bff; border: 1px solid #007bff; }
-        .btn-page.active { background-color: #007bff; color: white; }
+        .btn-page { display: inline-block; padding: 8px 12px; margin: 0 5px; text-decoration: none; color: #007bff; border: 1px solid #007bff; background-color: transparent; }
+        .btn-page.active { background-color: #007bff; color: white; font-weight: bold; }
+        .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
         .link-cadastro { display: inline-block; color: #edf5f5ff; text-decoration: none; font-weight: bold; padding: 8px 15px; border: 1px solid #021120ff; border-radius: 5px; background-color: #1167c2ee; }
         .logout-container { position: absolute; top: 20px; right: 20px; z-index: 1000; }
         .btn-logout { display: inline-block; padding: 8px 16px; background-color: #0b34ebff; color: white; text-decoration: none; border-radius: 8px; border: black 2px solid; font-weight: bold; }
@@ -162,7 +162,6 @@ try {
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; }
         .estatisticas p { font-size: 1.1em; padding: 15px 30px; background-color: #34495e; color: #ecf0f1; border-radius: 8px; margin: 10px 20px; }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; }
-        #chart_div { margin: 0 auto; }
         
         /* MODAL ERRO */
         .modal-erro-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); }
@@ -209,13 +208,13 @@ try {
             <?php endif; ?>
         <?php endif; ?>
 
-        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
+        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto; z-index: 5;">
             <h4>Estatísticas Rápidas</h4>
             <p>
                 Total de Incidentes Cadastrados: <strong><?php echo $total_incidentes; ?></strong><br>
                 Último Cadastro em: <strong><?php echo $ultimo_cadastro ? htmlspecialchars($ultimo_cadastro) : 'Nenhum'; ?></strong>
             </p>
-            <div id="chart_div"></div>
+            <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
         </div>
 
         <div id="status-busca" style="margin-top: 15px; font-weight: bold; text-align: center;">
@@ -259,20 +258,30 @@ try {
         </tbody>
     </table>
     <?php else: ?>
-        <p style="text-align:center;">Nenhum incidente encontrado no banco de dados.</p>
+        <p style="text-align: center;">Nenhum incidente encontrado no banco de dados.</p>
     <?php endif; ?>
 
     <div class="pagination" style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
         <?php if ($total_paginas > 1): ?>
             <?php $base_url = "dashboard.php?termo_busca=" . urlencode($termo_busca) . "&"; ?>
+            
             <?php if ($pagina_atual > 1): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual - 1); ?>" class="btn-page">Anterior</a>
+            <?php else: ?>
+                <span class="btn-page disabled">Anterior</span>
             <?php endif; ?>
+
             <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
-                <a href="<?php echo $base_url . 'pagina=' . $i; ?>" class="btn-page <?php echo ($i == $pagina_atual) ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                <a href="<?php echo $base_url . 'pagina=' . $i; ?>" 
+                   class="btn-page <?php echo ($i == $pagina_atual) ? 'active' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
             <?php endfor; ?>
+            
             <?php if ($pagina_atual < $total_paginas): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual + 1); ?>" class="btn-page">Próximo</a>
+            <?php else: ?>
+                <span class="btn-page disabled">Próximo</span>
             <?php endif; ?>
         <?php endif; ?>
         <p style="font-size: 0.9em; margin-top: 10px;">Página <?php echo $pagina_atual; ?> de <?php echo $total_paginas; ?></p>
@@ -324,7 +333,9 @@ try {
         });
         document.querySelectorAll('.btn-page').forEach(link => {
             link.addEventListener('click', function() {
-                if(!this.classList.contains('active')) document.getElementById('loader-overlay').style.display = 'flex';
+                if(!this.classList.contains('active') && !this.classList.contains('disabled')) {
+                    document.getElementById('loader-overlay').style.display = 'flex';
+                }
             });
         });
 
