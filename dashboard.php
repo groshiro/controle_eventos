@@ -15,6 +15,9 @@ ini_set('display_errors', 1);
 
 require_once 'conexao.php'; 
 
+// Força a codificação UTF8 para evitar caracteres estranhos (Ã, , etc)
+$pdo->exec("SET NAMES 'UTF8'");
+
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado']; 
 
 if ($pdo === null) { 
@@ -29,7 +32,6 @@ $offset = ($pagina_atual - 1) * $limite_por_pagina;
 $termo_busca = $_GET['termo_busca'] ?? '';
 $where_clause = '';
 $params = [];
-$total_encontrado = 0; 
 
 if (!empty($termo_busca)) {
     $termo_sql = "%" . $termo_busca . "%";
@@ -44,15 +46,15 @@ try {
 
     $sql_consulta = "SELECT id, data_cadastro, incidente, evento, endereco, area, regiao, site, otdr FROM controle" . $where_clause . " ORDER BY id LIMIT :limite OFFSET :offset";
     $stmt_consulta = $pdo->prepare($sql_consulta);
-    $params['limite'] = $limite_por_pagina;
-    $params['offset'] = $offset;
-    $stmt_consulta->execute($params);
+    $stmt_consulta->bindValue(':limite', (int)$limite_por_pagina, PDO::PARAM_INT);
+    $stmt_consulta->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+    if (!empty($termo_busca)) { $stmt_consulta->bindValue(':termo', $termo_sql); }
+
+    $stmt_consulta->execute();
     $lista_incidentes = $stmt_consulta->fetchAll();
-    $total_encontrado = count($lista_incidentes);
-
-    $total_incidentes = $pdo->query("SELECT COUNT(id) FROM controle")->fetchColumn();
+    
+    $total_incidentes = $total_registros_bd;
     $ultimo_cadastro = $pdo->query("SELECT data_cadastro FROM controle ORDER BY data_cadastro DESC LIMIT 1")->fetchColumn(); 
-
     $total_usuarios = $pdo->query("SELECT COUNT(id) FROM usuario")->fetchColumn();
     $lista_usuarios = $pdo->query("SELECT id, nome, login, nivel_permissao FROM usuario ORDER BY id ASC")->fetchAll();
 
@@ -65,18 +67,18 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Sistema de Controle</title>
+    <title>Dashboard | Controle de Incidentes</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', {'packages':['gauge']});
         google.charts.setOnLoadCallback(() => {
             var data = google.visualization.arrayToDataTable([['Label', 'Value'],['Incidentes', <?php echo $total_incidentes; ?>]]);
-            var options = { width: 400, height: 120, redFrom: 0, redTo: 3000, yellowFrom: 3001, yellowTo: 10000, greenFrom: 10001, greenTo: 25000, minorTicks: 5, max: 25000 };
+            var options = { width: 400, height: 120, redFrom: 0, redTo: 3000, yellowFrom: 3001, yellowTo: 10000, greenFrom: 10001, greenTo: 25000, max: 25000 };
             new google.visualization.Gauge(document.getElementById('chart_div')).draw(data, options);
         });
     </script>
     <style>
-        /* AMPULHETA CORRIGIDA (FIXED) PARA MOBILE */
+        /* AMPULHETA FIXED (SOLUÇÃO PARA MOBILE) */
         #loader-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px);
@@ -86,41 +88,34 @@ try {
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .texto-loader { margin-top: 20px; font-weight: bold; color: #e02810; font-size: 1.2em; text-align: center; }
 
-        /* ESTILOS GLOBAIS E FUNDO */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; position: relative; min-height: 100vh; }
-        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('claro-operadora.jpg'); background-size: cover; opacity: 0.15; filter: grayscale(50%); z-index: -3; }
+        /* ESTILOS DE FUNDO E TABELA */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('claro-operadora.jpg'); background-size: cover; opacity: 0.15; z-index: -3; }
         body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 10% 20%, rgba(0, 123, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(220, 53, 69, 0.05) 0%, transparent 40%); filter: blur(80px); animation: moveColors 25s ease-in-out infinite alternate; }
         @keyframes moveColors { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-2%, 2%) scale(1.05); } 100% { transform: translate(2%, -2%) scale(1); } }
         
-        /* TABELAS E HOVER ORIGINAL */
-        table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); border-collapse: collapse; margin: 20px auto; width: 100%; max-width: 1000px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; }
-        table th, .user-table th { background-color: #007bff; color: white; padding: 12px 15px; text-align: left; }
-        table td, .user-table td { border: 1px solid #ddd; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.85); transition: background-color 0.2s; }
-        table tr:nth-child(even) td, .user-table tbody tr:nth-child(even) td { background-color: rgba(247, 247, 247, 0.9); }
-        table tbody tr:hover td, .user-table tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
+        table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); border-collapse: collapse; margin: 20px auto; width: 95%; max-width: 1100px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        th { background-color: #007bff; color: white; padding: 12px; text-align: left; }
+        td { border: 1px solid #ddd; padding: 10px; background-color: rgba(255, 255, 255, 0.85); transition: background 0.2s; }
+        tr:nth-child(even) td { background-color: rgba(247, 247, 247, 0.9); }
+        tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
 
-        .header { color: black; padding: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 1.5em; text-decoration: underline; }
-        .container-titulo { text-align: center; }
-        h3 { display: inline-block; color: #235303ff; text-decoration: underline; margin-top: 0; padding: 10px; }
-        p { font-size: 18px; text-align: center; font-weight: bold; }
-
-        .btn-pesquisar, .btn-page { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-page { display: inline-block; text-decoration: none; color: #007bff; border: 1px solid #007bff; background-color: transparent; margin: 0 5px; }
-        .btn-page.active { background-color: #007bff; color: white; font-weight: bold; }
+        .header { text-align: center; padding: 20px; text-decoration: underline; font-weight: bold; font-size: 1.5em; }
+        .btn-pesquisar, .btn-page { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; }
+        .btn-page { background: transparent; color: #007bff; border: 1px solid #007bff; margin: 2px; }
+        .btn-page.active { background: #007bff; color: white; font-weight: bold; }
         .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
         
-        .logout-container { position: absolute; top: 20px; right: 20px; z-index: 1000; }
-        .btn-logout { display: inline-block; padding: 8px 16px; background-color: #0b34ebff; color: white; text-decoration: none; border-radius: 8px; border: black 2px solid; font-weight: bold; }
-        
-        .admin-header { margin-top: 50px; text-align: center; width: 100%; }
-
-        /* FOOTER E ESTATÍSTICAS DE USUÁRIOS (RESTALRADO) */
-        footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 40px auto 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
-        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
+        /* FOOTER ESTILIZADO ORIGINAL */
+        footer { width: 100%; max-width: 800px; margin: 40px auto 20px auto; background: #b2cae2; border-radius: 5px; border-top: 5px solid #3498db; }
+        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; }
-        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
-        .estatisticas p:hover { transform: translateY(-3px); box-shadow: 0 8px 12px rgba(0,0,0,0.5); }
+        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
+
+        .admin-header { text-align: center; margin-top: 50px; width: 100%; }
+        .logout-container { position: absolute; top: 20px; right: 20px; }
+        .btn-logout { background: #0b34eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid black; }
     </style>
 </head>
 <body>
@@ -131,30 +126,26 @@ try {
     </div>
 
     <div class="header">
-        <h2 id="titulo-saudacao">Bem-vindo <?php echo htmlspecialchars($nome_do_usuario); ?>!</h2>
+        <h2>Bem-vindo <?php echo htmlspecialchars($nome_do_usuario); ?>!</h2>
     </div>
-
-    <p style="text-align: center;">Novo incidente: <a href="cadastro.php" style="background:#1167c2; color:white; padding:8px 15px; border-radius:5px; text-decoration:none; font-weight:bold;">Cadastrar Incidente</a></p>
 
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
+    <p style="text-align: center;">Novo incidente: <a href="cadastro.php" style="background:#1167c2; color:white; padding:8px 15px; border-radius:5px; text-decoration:none; font-weight:bold;">Cadastrar Incidente</a></p>
+
     <div class="container-titulo">
-        <form id="form-busca" method="GET" action="dashboard.php" style="text-align: center; margin-bottom: 30px;">
-            <label style="font-weight: bold; margin-right: 10px;">Buscar Dados:</label>
-            <input type="text" name="termo_busca" style="width: 250px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" value="<?php echo htmlspecialchars($termo_busca); ?>">
+        <form id="form-busca" method="GET" style="text-align: center; margin-bottom: 30px;">
+            <label style="font-weight: bold; margin-right: 10px;">Buscar:</label>
+            <input type="text" name="termo_busca" style="width: 250px; padding: 8px;" value="<?php echo htmlspecialchars($termo_busca); ?>">
             <button type="submit" class="btn-pesquisar">Pesquisar</button>
         </form>
         
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto; z-index: 5;">
+        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
             <h4>Estatísticas Rápidas</h4>
-            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
             <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
-        </div>
-
-        <div style="margin-top: 15px; font-weight: bold;">
-            <?php echo !empty($termo_busca) ? $total_encontrado . " Resultados para: \"" . htmlspecialchars($termo_busca) . "\"" : "Total por Página: " . $total_encontrado; ?>
         </div>
     </div>
 
@@ -165,8 +156,20 @@ try {
         <tbody>
             <?php foreach ($lista_incidentes as $c): ?>
             <tr>
-                <td><?php echo $c['id']; ?></td><td><?php echo htmlspecialchars($c['incidente']); ?></td><td><?php echo htmlspecialchars($c['evento']); ?></td><td><?php echo htmlspecialchars($c['endereco']); ?></td><td><?php echo htmlspecialchars($c['area']); ?></td><td><?php echo htmlspecialchars($c['regiao']); ?></td><td><?php echo htmlspecialchars($c['site']); ?></td><td><?php echo htmlspecialchars($c['otdr']); ?></td>
-                <td><a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a></td>
+                <td><?php echo $c['id']; ?></td>
+                <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
+                <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
+                <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
+                <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
+                <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
+                <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
+                <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
+                <td>
+                    <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
+                    <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" 
+                       onclick="return confirm('Tem certeza que deseja excluir?')" 
+                       style="color:red; font-weight:bold;">Excluir</a>
+                </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
@@ -191,7 +194,6 @@ try {
                 <span class="btn-page disabled">Próximo</span>
             <?php endif; ?>
         <?php endif; ?>
-        <p style="font-size: 0.9em; margin-top: 10px;">Página <?php echo $pagina_atual; ?> de <?php echo $total_paginas; ?></p>
     </div>
 
     <div class="admin-header"><h3>Administração de Usuários</h3></div>
@@ -207,7 +209,7 @@ try {
     <footer>
         <div class="estatisticas">
             <h3>Estatísticas Rápidas</h3>
-            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
+            <p>Total de Usuários: <strong><?php echo $total_usuarios; ?></strong></p>
         </div>
     </footer>
 
