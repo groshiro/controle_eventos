@@ -15,7 +15,7 @@ ini_set('display_errors', 1);
 
 require_once 'conexao.php'; 
 
-// Força a codificação UTF8 para evitar caracteres estranhos (Ã, , etc)
+// Força UTF8 para evitar caracteres estranhos
 $pdo->exec("SET NAMES 'UTF8'");
 
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado']; 
@@ -52,7 +52,8 @@ try {
 
     $stmt_consulta->execute();
     $lista_incidentes = $stmt_consulta->fetchAll();
-    
+    $total_encontrado = count($lista_incidentes);
+
     $total_incidentes = $total_registros_bd;
     $ultimo_cadastro = $pdo->query("SELECT data_cadastro FROM controle ORDER BY data_cadastro DESC LIMIT 1")->fetchColumn(); 
     $total_usuarios = $pdo->query("SELECT COUNT(id) FROM usuario")->fetchColumn();
@@ -78,7 +79,7 @@ try {
         });
     </script>
     <style>
-        /* AMPULHETA FIXED (SOLUÇÃO PARA MOBILE) */
+        /* 1. AMPULHETA FIXED PARA MOBILE */
         #loader-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px);
@@ -88,34 +89,45 @@ try {
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .texto-loader { margin-top: 20px; font-weight: bold; color: #e02810; font-size: 1.2em; text-align: center; }
 
-        /* ESTILOS DE FUNDO E TABELA */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+        /* 2. ESTILOS GLOBAIS E FUNDO */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #fff; min-height: 100vh; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('claro-operadora.jpg'); background-size: cover; opacity: 0.15; z-index: -3; }
         body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 10% 20%, rgba(0, 123, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(220, 53, 69, 0.05) 0%, transparent 40%); filter: blur(80px); animation: moveColors 25s ease-in-out infinite alternate; }
-        @keyframes moveColors { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-2%, 2%) scale(1.05); } 100% { transform: translate(2%, -2%) scale(1); } }
-        
-        table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); border-collapse: collapse; margin: 20px auto; width: 95%; max-width: 1100px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        th { background-color: #007bff; color: white; padding: 12px; text-align: left; }
-        td { border: 1px solid #ddd; padding: 10px; background-color: rgba(255, 255, 255, 0.85); transition: background 0.2s; }
+        @keyframes moveColors { 0% { transform: translate(0, 0); } 100% { transform: translate(2%, -2%); } }
+
+        /* 3. TÍTULOS COM HOVER E CENTRALIZAÇÃO */
+        #titulo-incidentes, .admin-header h3 {
+            display: block; text-align: center; margin: 30px auto; font-size: 1.8em;
+            color: #e02810ff; text-decoration: underline; transition: all 0.3s ease;
+            cursor: pointer; width: fit-content; padding: 5px 15px;
+        }
+        #titulo-incidentes:hover, .admin-header h3:hover {
+            color: #007bff; transform: scale(1.05); text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 4. TABELAS, HOVER E ZEBRADO */
+        table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); border-collapse: collapse; margin: 20px auto; width: 95%; max-width: 1100px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        th { background-color: #007bff; color: white; padding: 12px 15px; text-align: left; font-weight: bold; }
+        td { border: 1px solid #ddd; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.85); transition: background-color 0.2s; }
         tr:nth-child(even) td { background-color: rgba(247, 247, 247, 0.9); }
         tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
 
-        .header { text-align: center; padding: 20px; text-decoration: underline; font-weight: bold; font-size: 1.5em; }
+        /* 5. FOOTER E CARD DE USUÁRIOS */
+        footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 40px auto 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
+        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
+        .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; text-decoration: none; }
+        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
+        .estatisticas p:hover { transform: translateY(-3px); box-shadow: 0 8px 12px rgba(0,0,0,0.5); }
+        .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
+
+        .header { text-align: center; padding: 20px; font-weight: bold; text-decoration: underline; font-size: 1.5em; }
         .btn-pesquisar, .btn-page { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; }
         .btn-page { background: transparent; color: #007bff; border: 1px solid #007bff; margin: 2px; }
         .btn-page.active { background: #007bff; color: white; font-weight: bold; }
         .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
-        
-        /* FOOTER ESTILIZADO ORIGINAL */
-        footer { width: 100%; max-width: 800px; margin: 40px auto 20px auto; background: #b2cae2; border-radius: 5px; border-top: 5px solid #3498db; }
-        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; }
-        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; }
-        .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
-
-        .admin-header { text-align: center; margin-top: 50px; width: 100%; }
         .logout-container { position: absolute; top: 20px; right: 20px; }
         .btn-logout { background: #0b34eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid black; }
+        .status-msg { max-width: 600px; margin: 10px auto; padding: 15px; background: #d4edda; color: #155724; border-radius: 5px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -134,17 +146,21 @@ try {
     <p style="text-align: center;">Novo incidente: <a href="cadastro.php" style="background:#1167c2; color:white; padding:8px 15px; border-radius:5px; text-decoration:none; font-weight:bold;">Cadastrar Incidente</a></p>
 
     <div class="container-titulo">
-        <form id="form-busca" method="GET" style="text-align: center; margin-bottom: 30px;">
+        <form id="form-busca" method="GET" action="dashboard.php" style="text-align: center; margin-bottom: 30px;">
             <label style="font-weight: bold; margin-right: 10px;">Buscar:</label>
-            <input type="text" name="termo_busca" style="width: 250px; padding: 8px;" value="<?php echo htmlspecialchars($termo_busca); ?>">
+            <input type="text" name="termo_busca" style="width: 250px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" value="<?php echo htmlspecialchars($termo_busca); ?>">
             <button type="submit" class="btn-pesquisar">Pesquisar</button>
         </form>
         
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
+        <?php if (isset($_GET['status']) && $_GET['status'] == 'alterado'): ?>
+            <div class="status-msg">✅ Incidente atualizado com sucesso!</div>
+        <?php endif; ?>
+
         <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
             <h4>Estatísticas Rápidas</h4>
-            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último em: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
             <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
         </div>
     </div>
@@ -167,8 +183,7 @@ try {
                 <td>
                     <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
                     <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" 
-                       onclick="return confirm('Tem certeza que deseja excluir?')" 
-                       style="color:red; font-weight:bold;">Excluir</a>
+                       onclick="return confirm('Tem certeza que deseja excluir?')" style="color:red; font-weight:bold;">Excluir</a>
                 </td>
             </tr>
             <?php endforeach; ?>
@@ -183,17 +198,16 @@ try {
             <?php else: ?>
                 <span class="btn-page disabled">Anterior</span>
             <?php endif; ?>
-
             <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
                 <a href="<?php echo $base_url . 'pagina=' . $i; ?>" class="btn-page <?php echo ($i == $pagina_atual) ? 'active' : ''; ?>"><?php echo $i; ?></a>
             <?php endfor; ?>
-            
             <?php if ($pagina_atual < $total_paginas): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual + 1); ?>" class="btn-page">Próximo</a>
             <?php else: ?>
                 <span class="btn-page disabled">Próximo</span>
             <?php endif; ?>
         <?php endif; ?>
+        <p style="font-size: 0.9em; margin-top: 10px;">Página <?php echo $pagina_atual; ?> de <?php echo $total_paginas; ?></p>
     </div>
 
     <div class="admin-header"><h3>Administração de Usuários</h3></div>
@@ -209,13 +223,13 @@ try {
     <footer>
         <div class="estatisticas">
             <h3>Estatísticas Rápidas</h3>
-            <p>Total de Usuários: <strong><?php echo $total_usuarios; ?></strong></p>
+            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
         </div>
     </footer>
 
     <script>
         const loader = document.getElementById('loader-overlay');
-        document.getElementById('form-busca').addEventListener('submit', () => { loader.style.display = 'flex'; });
+        document.getElementById('form-busca').addEventListener('submit', () => loader.style.display = 'flex');
         document.querySelectorAll('.btn-page').forEach(btn => {
             btn.addEventListener('click', function() {
                 if(!this.classList.contains('active') && !this.classList.contains('disabled')) loader.style.display = 'flex';
