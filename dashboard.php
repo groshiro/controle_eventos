@@ -1,5 +1,3 @@
-PHP
-
 <?php
 // Arquivo: dashboard.php
 if (session_status() == PHP_SESSION_NONE) {
@@ -263,3 +261,4 @@ try {
     </script>
 </body>
 </html>
+
