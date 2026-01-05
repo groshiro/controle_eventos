@@ -144,6 +144,7 @@ try {
         }
         @keyframes moveColors { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-2%, 2%) scale(1.05); } 100% { transform: translate(2%, -2%) scale(1); } }
         table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); width: 100%; border-collapse: collapse; margin: 20px auto; max-width: 1000px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; }
+        .admin-header { margin-top: 50px; text-align: center; /* ISSO CENTRALIZA O TEXTO */ width: 100%;}
         .header { color: black; padding: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 1.5em; text-decoration: underline; }
         .container-titulo { text-align: center; }
         h3 { display: inline-block; color: #235303ff; text-decoration: underline; margin-top: 0; padding: 10px; }
@@ -349,3 +350,4 @@ try {
     </script>
 </body>
 </html>
+
