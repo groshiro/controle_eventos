@@ -1,3 +1,5 @@
+PHP
+
 <?php
 // Arquivo: dashboard.php
 if (session_status() == PHP_SESSION_NONE) {
@@ -24,7 +26,7 @@ if ($pdo === null) {
     die("❌ Erro: Falha na conexão com o banco de dados.");
 }
 
-// Configurações da Paginação Original
+// Configurações da Paginação
 $limite_por_pagina = 1500; 
 $pagina_atual = $_GET['pagina'] ?? 1; 
 $offset = ($pagina_atual - 1) * $limite_por_pagina;
@@ -68,7 +70,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Controle de Incidentes</title>
+    <title>Dashboard | Sistema de Controle</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', {'packages':['gauge']});
@@ -90,7 +92,7 @@ try {
         .texto-loader { margin-top: 20px; font-weight: bold; color: #e02810; font-size: 1.2em; text-align: center; }
 
         /* 2. ESTILOS GLOBAIS E FUNDO */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #fff; min-height: 100vh; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #fff; min-height: 100vh; overflow-x: hidden; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('claro-operadora.jpg'); background-size: cover; opacity: 0.15; z-index: -3; }
         body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 10% 20%, rgba(0, 123, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(220, 53, 69, 0.05) 0%, transparent 40%); filter: blur(80px); animation: moveColors 25s ease-in-out infinite alternate; }
         @keyframes moveColors { 0% { transform: translate(0, 0); } 100% { transform: translate(2%, -2%); } }
@@ -112,7 +114,21 @@ try {
         tr:nth-child(even) td { background-color: rgba(247, 247, 247, 0.9); }
         tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
 
-        /* 5. FOOTER E CARD DE USUÁRIOS */
+        /* 5. PAGINAÇÃO ORGANIZADA (FLEXBOX) */
+        .pagination {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            gap: 5px; margin: 30px auto; padding: 10px; max-width: 95%;
+        }
+        .btn-page {
+            display: inline-flex; justify-content: center; align-items: center;
+            min-width: 35px; height: 35px; padding: 0 10px; text-decoration: none;
+            color: #007bff; border: 1px solid #007bff; border-radius: 4px;
+            background-color: transparent; transition: all 0.2s; font-size: 14px;
+        }
+        .btn-page.active { background-color: #007bff; color: white; font-weight: bold; }
+        .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
+
+        /* 6. FOOTER E CARD DE USUÁRIOS */
         footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 40px auto 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
         .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; text-decoration: none; }
@@ -121,10 +137,6 @@ try {
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
 
         .header { text-align: center; padding: 20px; font-weight: bold; text-decoration: underline; font-size: 1.5em; }
-        .btn-pesquisar, .btn-page { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; }
-        .btn-page { background: transparent; color: #007bff; border: 1px solid #007bff; margin: 2px; }
-        .btn-page.active { background: #007bff; color: white; font-weight: bold; }
-        .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
         .logout-container { position: absolute; top: 20px; right: 20px; }
         .btn-logout { background: #0b34eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid black; }
         .status-msg { max-width: 600px; margin: 10px auto; padding: 15px; background: #d4edda; color: #155724; border-radius: 5px; text-align: center; font-weight: bold; }
@@ -134,7 +146,7 @@ try {
 
     <div id="loader-overlay">
         <div class="ampulheta">⏳</div>
-        <div class="texto-loader">Buscando no banco de dados...</div>
+        <div class="texto-loader">Buscando informações no sistema...</div>
     </div>
 
     <div class="header">
@@ -149,7 +161,7 @@ try {
         <form id="form-busca" method="GET" action="dashboard.php" style="text-align: center; margin-bottom: 30px;">
             <label style="font-weight: bold; margin-right: 10px;">Buscar:</label>
             <input type="text" name="termo_busca" style="width: 250px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" value="<?php echo htmlspecialchars($termo_busca); ?>">
-            <button type="submit" class="btn-pesquisar">Pesquisar</button>
+            <button type="submit" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Pesquisar</button>
         </form>
         
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
@@ -160,55 +172,68 @@ try {
 
         <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
             <h4>Estatísticas Rápidas</h4>
-            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último em: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
             <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
         </div>
     </div>
 
-    <table>
-        <thead>
-            <tr><th>ID</th><th>Incidente</th><th>Evento</th><th>Endereço</th><th>Área</th><th>Região</th><th>Site</th><th>OTDR</th><th>Ações</th></tr>
-        </thead>
-        <tbody>
-            <?php foreach ($lista_incidentes as $c): ?>
-            <tr>
-                <td><?php echo $c['id']; ?></td>
-                <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
-                <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
-                <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
-                <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
-                <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
-                <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
-                <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
-                <td>
-                    <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
-                    <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" 
-                       onclick="return confirm('Tem certeza que deseja excluir?')" style="color:red; font-weight:bold;">Excluir</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Incidente</th><th>Evento</th><th>Endereço</th><th>Área</th><th>Região</th><th>Site</th><th>OTDR</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <?php foreach ($lista_incidentes as $c): ?>
+                <tr>
+                    <td><?php echo $c['id']; ?></td>
+                    <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
+                    <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
+                    <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
+                    <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
+                    <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
+                    <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
+                    <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
+                    <td>
+                        <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
+                        <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 
-    <div class="pagination" style="text-align: center; margin: 30px 0;">
+    <div class="pagination">
         <?php if ($total_paginas > 1): ?>
             <?php $base_url = "dashboard.php?termo_busca=" . urlencode($termo_busca) . "&"; ?>
+            
             <?php if ($pagina_atual > 1): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual - 1); ?>" class="btn-page">Anterior</a>
             <?php else: ?>
                 <span class="btn-page disabled">Anterior</span>
             <?php endif; ?>
-            <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+
+            <?php 
+            $gap = 2; // Quantas páginas mostrar ao redor da atual
+            for ($i = 1; $i <= $total_paginas; $i++): 
+                if ($i == 1 || $i == $total_paginas || ($i >= $pagina_atual - $gap && $i <= $pagina_atual + $gap)):
+            ?>
                 <a href="<?php echo $base_url . 'pagina=' . $i; ?>" class="btn-page <?php echo ($i == $pagina_atual) ? 'active' : ''; ?>"><?php echo $i; ?></a>
-            <?php endfor; ?>
+            <?php 
+                elseif ($i == $pagina_atual - $gap - 1 || $i == $pagina_atual + $gap + 1):
+                    echo "<span class='btn-page disabled'>...</span>";
+                endif;
+            endfor; 
+            ?>
+            
             <?php if ($pagina_atual < $total_paginas): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual + 1); ?>" class="btn-page">Próximo</a>
             <?php else: ?>
                 <span class="btn-page disabled">Próximo</span>
             <?php endif; ?>
         <?php endif; ?>
-        <p style="font-size: 0.9em; margin-top: 10px;">Página <?php echo $pagina_atual; ?> de <?php echo $total_paginas; ?></p>
     </div>
+    <p style="text-align: center; font-size: 0.9em; margin-bottom: 30px;">Página <?php echo $pagina_atual; ?> de <?php echo $total_paginas; ?></p>
 
     <div class="admin-header"><h3>Administração de Usuários</h3></div>
     <table class="user-table">
