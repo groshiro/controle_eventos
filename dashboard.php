@@ -18,13 +18,7 @@ require_once 'conexao.php';
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado']; 
 
 if ($pdo === null) { 
-    die("❌ Erro: Falha na conexão com o banco de dados. Status: " . $status_conexao);
-}
-
-if (!isset($_SESSION['usuario_logado'])) {
-    echo "PONTO DE ALERTA: Usuário não logado (Redirecionamento evitado).<br>";
-} else {
-    $login_usuario = $_SESSION['usuario_logado'];
+    die("❌ Erro: Falha na conexão com o banco de dados.");
 }
 
 $lista_incidentes = [];
@@ -124,11 +118,10 @@ try {
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .texto-loader { margin-top: 15px; font-weight: bold; color: #e02810; }
 
-        /* Mensagens de Confirmação */
         .status-msg { max-width: 600px; margin: 10px auto; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; }
         .status-sucesso { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-        /* SEUS ESTILOS ORIGINAIS MANTIDOS */
+        /* ESTILOS ORIGINAIS */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; position: relative; min-height: 100vh; }
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -143,28 +136,52 @@ try {
             filter: blur(80px); animation: moveColors 25s ease-in-out infinite alternate;
         }
         @keyframes moveColors { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-2%, 2%) scale(1.05); } 100% { transform: translate(2%, -2%) scale(1); } }
+        
         table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); width: 100%; border-collapse: collapse; margin: 20px auto; max-width: 1000px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; }
-        .admin-header { margin-top: 50px; text-align: center; /* ISSO CENTRALIZA O TEXTO */ width: 100%;}
+        
+        .admin-header { margin-top: 50px; text-align: center; width: 100%; }
         .header { color: black; padding: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 1.5em; text-decoration: underline; }
         .container-titulo { text-align: center; }
         h3 { display: inline-block; color: #235303ff; text-decoration: underline; margin-top: 0; padding: 10px; }
         p { font-size: 18px; text-align: center; font-weight: bold; }
+        
         .btn-pesquisar, .btn-page { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; }
         .btn-page { display: inline-block; padding: 8px 12px; margin: 0 5px; text-decoration: none; color: #007bff; border: 1px solid #007bff; background-color: transparent; }
         .btn-page.active { background-color: #007bff; color: white; font-weight: bold; }
         .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
+        
         .link-cadastro { display: inline-block; color: #edf5f5ff; text-decoration: none; font-weight: bold; padding: 8px 15px; border: 1px solid #021120ff; border-radius: 5px; background-color: #1167c2ee; }
         .logout-container { position: absolute; top: 20px; right: 20px; z-index: 1000; }
         .btn-logout { display: inline-block; padding: 8px 16px; background-color: #0b34ebff; color: white; text-decoration: none; border-radius: 8px; border: black 2px solid; font-weight: bold; }
-        table th, .user-table th { background-color: #007bff; color: white; padding: 12px 15px; text-align: left; }
-        table td, .user-table td { border: 1px solid #ddd; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.85); }
+        
+        table th, .user-table th { background-color: #007bff; color: white; padding: 12px 15px; text-align: left; font-weight: bold; }
+        
+        /* === CORES DAS LINHAS E HOVER (RESTAURADO) === */
+        table td, .user-table td { 
+            border: 1px solid #ddd; 
+            padding: 10px 15px; 
+            text-align: left; 
+            background-color: rgba(255, 255, 255, 0.85); 
+            transition: background-color 0.2s;
+        }
+
+        /* Linhas Zebradas (Pares mais opacas) */
+        table tr:nth-child(even) td, .user-table tbody tr:nth-child(even) td { 
+            background-color: rgba(247, 247, 247, 0.9); 
+        }
+
+        /* Efeito de Destaque ao passar o mouse */
+        table tbody tr:hover td, .user-table tbody tr:hover td { 
+            background-color: rgba(233, 247, 255, 0.95); 
+            cursor: pointer;
+        }
+
         footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
         .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; }
         .estatisticas p { font-size: 1.1em; padding: 15px 30px; background-color: #34495e; color: #ecf0f1; border-radius: 8px; margin: 10px 20px; }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; }
         
-        /* MODAL ERRO */
         .modal-erro-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); }
         .modal-erro-content { background-color: #fff; margin: 10% auto; padding: 20px; border: 3px solid #dc3545; border-radius: 8px; width: 80%; max-width: 450px; text-align: center; }
         .btn-fechar-modal { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
@@ -328,7 +345,6 @@ try {
     </div>
 
     <script>
-        // LÓGICA DO LOADER (AMPULHETA)
         document.getElementById('form-busca').addEventListener('submit', function() {
             document.getElementById('loader-overlay').style.display = 'flex';
         });
@@ -340,7 +356,6 @@ try {
             });
         });
 
-        // LÓGICA DO MODAL
         const mensagemErro = <?php echo json_encode($alerta_erro ?? ''); ?>;
         function fecharModal() { document.getElementById('modal-erro').style.display = 'none'; }
         if (mensagemErro) {
@@ -350,4 +365,3 @@ try {
     </script>
 </body>
 </html>
-
