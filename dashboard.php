@@ -70,14 +70,13 @@ try {
     <script type="text/javascript">
         google.charts.load('current', {'packages':['gauge']});
         google.charts.setOnLoadCallback(() => {
-            var total = <?php echo $total_incidentes; ?>;
-            var data = google.visualization.arrayToDataTable([['Label', 'Value'],['Incidentes', total]]);
+            var data = google.visualization.arrayToDataTable([['Label', 'Value'],['Incidentes', <?php echo $total_incidentes; ?>]]);
             var options = { width: 400, height: 120, redFrom: 0, redTo: 3000, yellowFrom: 3001, yellowTo: 10000, greenFrom: 10001, greenTo: 25000, minorTicks: 5, max: 25000 };
             new google.visualization.Gauge(document.getElementById('chart_div')).draw(data, options);
         });
     </script>
     <style>
-        /* AMPULHETA CORRIGIDA (FIXED) PARA NÃO SAIR DA TELA */
+        /* AMPULHETA CORRIGIDA (FIXED) PARA MOBILE */
         #loader-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px);
@@ -87,22 +86,23 @@ try {
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .texto-loader { margin-top: 20px; font-weight: bold; color: #e02810; font-size: 1.2em; text-align: center; }
 
-        /* ESTILOS ORIGINAIS RESTAURADOS */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: #ffffff; min-height: 100vh; }
+        /* ESTILOS GLOBAIS E FUNDO */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; position: relative; min-height: 100vh; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('claro-operadora.jpg'); background-size: cover; opacity: 0.15; filter: grayscale(50%); z-index: -3; }
         body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 10% 20%, rgba(0, 123, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(220, 53, 69, 0.05) 0%, transparent 40%); filter: blur(80px); animation: moveColors 25s ease-in-out infinite alternate; }
         @keyframes moveColors { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-2%, 2%) scale(1.05); } 100% { transform: translate(2%, -2%) scale(1); } }
         
-        .header { color: black; padding: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 1.5em; text-decoration: underline; }
-        .container-titulo { text-align: center; }
-        h3 { display: inline-block; color: #235303ff; text-decoration: underline; margin-top: 0; padding: 10px; }
-        p { font-size: 18px; text-align: center; font-weight: bold; }
-
+        /* TABELAS E HOVER ORIGINAL */
         table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); border-collapse: collapse; margin: 20px auto; width: 100%; max-width: 1000px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; }
         table th, .user-table th { background-color: #007bff; color: white; padding: 12px 15px; text-align: left; }
         table td, .user-table td { border: 1px solid #ddd; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.85); transition: background-color 0.2s; }
         table tr:nth-child(even) td, .user-table tbody tr:nth-child(even) td { background-color: rgba(247, 247, 247, 0.9); }
         table tbody tr:hover td, .user-table tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
+
+        .header { color: black; padding: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 1.5em; text-decoration: underline; }
+        .container-titulo { text-align: center; }
+        h3 { display: inline-block; color: #235303ff; text-decoration: underline; margin-top: 0; padding: 10px; }
+        p { font-size: 18px; text-align: center; font-weight: bold; }
 
         .btn-pesquisar, .btn-page { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .btn-page { display: inline-block; text-decoration: none; color: #007bff; border: 1px solid #007bff; background-color: transparent; margin: 0 5px; }
@@ -111,16 +111,23 @@ try {
         
         .logout-container { position: absolute; top: 20px; right: 20px; z-index: 1000; }
         .btn-logout { display: inline-block; padding: 8px 16px; background-color: #0b34ebff; color: white; text-decoration: none; border-radius: 8px; border: black 2px solid; font-weight: bold; }
+        
         .admin-header { margin-top: 50px; text-align: center; width: 100%; }
-        .status-msg { max-width: 600px; margin: 10px auto; padding: 15px; background: #d4edda; color: #155724; border-radius: 5px; text-align: center; font-weight: bold; }
-        footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
+
+        /* FOOTER E ESTATÍSTICAS DE USUÁRIOS (RESTALRADO) */
+        footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 40px auto 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
+        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
+        .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; }
+        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
+        .estatisticas p:hover { transform: translateY(-3px); box-shadow: 0 8px 12px rgba(0,0,0,0.5); }
+        .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="loader-overlay">
         <div class="ampulheta">⏳</div>
-        <div class="texto-loader">Buscando informações no banco...</div>
+        <div class="texto-loader">Buscando no banco de dados...</div>
     </div>
 
     <div class="header">
@@ -137,16 +144,17 @@ try {
             <input type="text" name="termo_busca" style="width: 250px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" value="<?php echo htmlspecialchars($termo_busca); ?>">
             <button type="submit" class="btn-pesquisar">Pesquisar</button>
         </form>
+        
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <?php if (isset($_GET['status']) && $_GET['status'] == 'alterado'): ?>
-            <div class="status-msg">✅ Incidente atualizado com sucesso!</div>
-        <?php endif; ?>
-
-        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
+        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto; z-index: 5;">
             <h4>Estatísticas Rápidas</h4>
-            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último em: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
             <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
+        </div>
+
+        <div style="margin-top: 15px; font-weight: bold;">
+            <?php echo !empty($termo_busca) ? $total_encontrado . " Resultados para: \"" . htmlspecialchars($termo_busca) . "\"" : "Total por Página: " . $total_encontrado; ?>
         </div>
     </div>
 
@@ -158,7 +166,7 @@ try {
             <?php foreach ($lista_incidentes as $c): ?>
             <tr>
                 <td><?php echo $c['id']; ?></td><td><?php echo htmlspecialchars($c['incidente']); ?></td><td><?php echo htmlspecialchars($c['evento']); ?></td><td><?php echo htmlspecialchars($c['endereco']); ?></td><td><?php echo htmlspecialchars($c['area']); ?></td><td><?php echo htmlspecialchars($c['regiao']); ?></td><td><?php echo htmlspecialchars($c['site']); ?></td><td><?php echo htmlspecialchars($c['otdr']); ?></td>
-                <td><a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue;">Editar</a></td>
+                <td><a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
@@ -167,7 +175,6 @@ try {
     <div class="pagination" style="text-align: center; margin: 30px 0;">
         <?php if ($total_paginas > 1): ?>
             <?php $base_url = "dashboard.php?termo_busca=" . urlencode($termo_busca) . "&"; ?>
-            
             <?php if ($pagina_atual > 1): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual - 1); ?>" class="btn-page">Anterior</a>
             <?php else: ?>
@@ -197,11 +204,16 @@ try {
         </tbody>
     </table>
 
-    <footer><div class="estatisticas"><h3>Estatísticas</h3><p>Total de Usuários: <strong><?php echo $total_usuarios; ?></strong></p></div></footer>
+    <footer>
+        <div class="estatisticas">
+            <h3>Estatísticas Rápidas</h3>
+            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
+        </div>
+    </footer>
 
     <script>
         const loader = document.getElementById('loader-overlay');
-        document.getElementById('form-busca').addEventListener('submit', () => loader.style.display = 'flex');
+        document.getElementById('form-busca').addEventListener('submit', () => { loader.style.display = 'flex'; });
         document.querySelectorAll('.btn-page').forEach(btn => {
             btn.addEventListener('click', function() {
                 if(!this.classList.contains('active') && !this.classList.contains('disabled')) loader.style.display = 'flex';
