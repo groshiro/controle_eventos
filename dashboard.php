@@ -504,8 +504,34 @@ try {
 .btn-fechar-modal:hover {
     background-color: #0056b3;
 }
-                
-    </style>
+/* Container que permite a rolagem horizontal fixa na visão */
+.tabela-container-scroll {
+    overflow-x: auto;
+    max-height: 75vh; /* Define que a tabela ocupa 75% da altura da tela */
+    position: relative;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+/* Fixar o cabeçalho no topo para não se perder ao descer a lista */
+.tabela-container-scroll table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #007bff;
+}
+
+/* Garante que a barra de rolagem horizontal fique sempre visível no final da área visível */
+.tabela-container-scroll::-webkit-scrollbar {
+    height: 12px; /* Deixa a barra mais grossa para facilitar no mobile */
+}
+
+.tabela-container-scroll::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 10px;
+}              
+</style>
 </head>
 <body>
 
@@ -551,32 +577,41 @@ try {
         </div>
     </div>
 
-    <div style="overflow-x: auto;">
-        <table>
-            <thead>
-                <tr><th>ID</th><th>Incidente</th><th>Evento</th><th>Endereço</th><th>Área</th><th>Região</th><th>Site</th><th>OTDR</th><th>Ações</th></tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lista_incidentes as $c): ?>
-                <tr>
-                    <td><?php echo $c['id']; ?></td>
-                    <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
-                    <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
-                    <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
-                    <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
-                    <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
-                    <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
-                    <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
-                    <td>
-                        <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
-                        <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-
+    <div class="tabela-container-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Incidente</th>
+                <th>Evento</th>
+                <th>Endereço</th>
+                <th>Área</th>
+                <th>Região</th>
+                <th>Site</th>
+                <th>OTDR</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($lista_incidentes as $c): ?>
+            <tr>
+                <td><?php echo $c['id']; ?></td>
+                <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
+                <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
+                <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
+                <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
+                <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
+                <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
+                <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
+                <td>
+                    <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
+                    <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
     <div class="pagination">
         <?php if ($total_paginas > 1): ?>
             <?php $base_url = "dashboard.php?termo_busca=" . urlencode($termo_busca) . "&"; ?>
@@ -683,3 +718,4 @@ try {
     </script>
 </body>
 </html>
+
