@@ -149,7 +149,7 @@ try {
                 font-weight: 700; /* Negrito moderno */
             }
             
-            /* === EFEITO HOVER (O que você pediu) === */
+            /* === EFEITO HOVER  === */
             .btn-page:not(.active):not(.disabled):hover {
                 background-color: #007bff;
                 color: white;
@@ -174,13 +174,92 @@ try {
                 opacity: 0.6;
             }
 
-        /* 6. ESTATÍSTICAS */
-        .destaque-pagina { margin: 15px 0; font-size: 1.1em; color: #333; font-weight: bold; }
-        footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 40px auto 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
-        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
-        .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; text-decoration: none; }
-        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
-        .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
+        /* Estilo para a Tabela de Usuários (Apenas ajustes específicos) */
+    .user-table {
+        width: 90%; 
+        max-width: 800px; /* Mantém a largura específica para a tabela de admin */
+    }
+
+    /* Estilo do Link de Edição/Ações */
+    table a, .user-table a {
+        color: #17a2b8; 
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    table a:hover, .user-table a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    /* ======================================================= */
+    /* 4. ESTILOS DE ADMIN/FOOTER */
+    /* ======================================================= */
+
+    .admin-header {
+        margin-top: 50px;
+        text-align: center;
+    }
+
+    /* Estilos para o Rodapé (Footer) */
+    footer {
+        width: 100%;
+        border-radius: 5px;
+        border: 1px solid #131212ff;
+        padding: 20px 0; 
+        background-color: #b2cae2ff; 
+        max-width: 800px;
+        margin: 20px auto; /* Mantendo a margem do footer centralizada */
+        color: #239406ff; 
+        border-top: 5px solid #3498db; 
+    }
+
+    /* Container Principal das Estatísticas */
+    .estatisticas {
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
+        padding: 0 20px;
+    }
+
+    /* Título (Estatísticas Rápidas) */
+    .estatisticas h3 {
+        font-size: 1.5em;
+        color: #e20e0eff; 
+        margin-bottom: 20px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #db4d34ff;
+        letter-spacing: 1px;
+    }
+
+    /* Estilo para a Linha de Texto da Estatística */
+    .estatisticas p {
+        font-size: 1.1em;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        background-color: #34495e; 
+        color: #ecf0f1;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease-in-out; 
+        margin: 10px 20px; 
+    }
+
+    /* EFEITO DE HOVER (Animação) */
+    .estatisticas p:hover {
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+        transform: translateY(-3px); 
+        border: 1px solid #3498db; 
+        cursor: pointer;
+    }
+
+    /* Estilo para o Número em Destaque */
+    .estatisticas strong {
+        color: #e67e22; 
+        font-size: 1.5em;
+        margin-left: 10px;
+        font-weight: bold;
+    }
         /* Container do Cabeçalho */
         .header {
             width: 100%;
@@ -220,12 +299,12 @@ try {
             text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2);
         }
         /* Container que fixa o botão no topo direito */
-.logout-container {
-    position: absolute;
-    top: 25px;
-    right: 30px;
-    z-index: 1000;
-}
+        .logout-container {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            z-index: 1000;
+        }
 
 /* Estilização do Botão Azul */
 .btn-logout {
@@ -350,7 +429,7 @@ try {
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-/* EFEITO HOVER (O que você pediu) */
+/* EFEITO HOVER */
 .btn-pesquisar:hover {
     transform: scale(1.06) translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5);
@@ -360,6 +439,70 @@ try {
 /* Feedback de clique */
 .btn-pesquisar:active {
     transform: scale(0.98);
+}
+ .modal-erro-overlay {
+    /* Esconde o modal por padrão */
+    display: none; 
+    position: fixed; /* Fixa na tela */
+    z-index: 9999; /* Garante que fique acima de tudo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo escuro semi-transparente */
+    overflow: auto; 
+}
+
+.modal-erro-content {
+    background-color: #fff;
+    margin: 10% auto; /* Centraliza verticalmente e horizontalmente (10% do topo) */
+    padding: 20px;
+    border: 3px solid #dc3545; /* Borda vermelha de erro */
+    border-radius: 8px;
+    width: 80%;
+    max-width: 450px; /* Limita a largura para melhor visualização */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.modal-erro-titulo {
+    color: #dc3545;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+#modal-erro-texto {
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.modal-erro-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.modal-erro-close:hover,
+.modal-erro-close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-fechar-modal {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-fechar-modal:hover {
+    background-color: #0056b3;
 }
                 
     </style>
@@ -457,15 +600,38 @@ try {
         <?php endif; ?>
     </div>
 
-    <div class="admin-header"><h3>Administração de Usuários</h3></div>
-    <table class="user-table">
-        <thead><tr><th>ID</th><th>Nome</th><th>Login</th><th>Permissão</th></tr></thead>
-        <tbody>
-            <?php foreach ($lista_usuarios as $u): ?>
-            <tr><td><?php echo $u['id']; ?></td><td><?php echo htmlspecialchars($u['nome']); ?></td><td><?php echo htmlspecialchars($u['login']); ?></td><td><?php echo htmlspecialchars($u['nivel_permissao']); ?></td></tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="admin-header">
+    <h3>Administração de Usuários</h3>
+</div>
+
+<?php if (count($lista_usuarios) > 0): ?>
+<table class="user-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Login</th>
+            <th>Permissão Atual</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($lista_usuarios as $usuario): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($usuario['id'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($usuario['nome'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($usuario['login'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($usuario['nivel_permissao'] ?? ''); ?></td>
+            <td>
+                <a href="alterar_usuario.php?id=<?php echo $usuario['id']; ?>">Editar Usuário</a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<?php else: ?>
+    <p class="no-user-message">Nenhum usuário encontrado na tabela 'usuario'</p>
+<?php endif; ?>
 
     <footer>
         <div class="estatisticas">
@@ -473,7 +639,36 @@ try {
             <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
         </div>
     </footer>
+    <!-- Modal de Erro -->
+        <div id="modal-erro" class="modal-erro-overlay">
+        <div class="modal-erro-content">
+        <span class="modal-erro-close" onclick="fecharModal()">×</span>
+        <h4 class="modal-erro-titulo">⚠️ Erro de Permissão</h4>
+        <p id="modal-erro-texto"></p>
+        <button onclick="fecharModal()" class="btn-fechar-modal">Entendi</button>
+    </div>
+    <script>
+    // Variável JS para a mensagem de erro (escapa caracteres especiais para segurança)
+    const mensagemErro = <?php echo json_encode($alerta_erro ?? ''); ?>;
+    
+    // Função para fechar o modal (chamada pelos botões)
+    function fecharModal() {
+        document.getElementById('modal-erro').style.display = 'none';
+    }
 
+    if (mensagemErro) {
+        // 1. Encontra os elementos
+        const modal = document.getElementById('modal-erro');
+        const texto = document.getElementById('modal-erro-texto');
+        
+        // 2. Insere o texto da mensagem
+        texto.innerText = mensagemErro;
+        
+        // 3. Exibe o modal (ativa o CSS)
+        modal.style.display = 'block';
+    }
+    </script>
+     </div>
     <script>
         const loader = document.getElementById('loader-overlay');
         document.getElementById('form-busca').addEventListener('submit', () => loader.style.display = 'flex');
@@ -485,6 +680,7 @@ try {
     </script>
 </body>
 </html>
+
 
 
 
