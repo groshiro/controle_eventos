@@ -222,8 +222,8 @@ try {
         padding: 0 20px;
     }
 
-    /* Título (Estatísticas Rápidas) */
-    .estatisticas h3 {
+    /* Título Unificado (Estatísticas Rápidas - Card e Footer) */
+    .estatisticas h3, .card-stats h4 {
         font-size: 1.5em;
         color: #e20e0eff; 
         margin-bottom: 20px;
@@ -536,15 +536,18 @@ try {
         
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
-            <h4>Estatísticas Rápidas</h4>
-            <p>Total Geral: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+        <div class="card-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: rgba(255, 255, 255, 0.6); border-radius: 12px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             
-            <div class="destaque-pagina">
-                Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff;"><?php echo $total_nesta_pagina; ?></span>
+            <h4>ESTATÍSTICAS RÁPIDAS</h4>
+            
+            <p style="font-size: 1.1em;">Total Geral: <strong><?php echo $total_incidentes; ?></strong></p>
+            <p style="font-size: 1.1em;">Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            
+            <div class="destaque-pagina" style="border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;">
+                Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff; font-weight: 900;"><?php echo $total_nesta_pagina; ?></span>
             </div>
             
-            <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
+            <div id="chart_div" style="width: 400px; height: 120px; margin: 10px auto;"></div>
         </div>
     </div>
 
@@ -680,6 +683,7 @@ try {
     </script>
 </body>
 </html>
+
 
 
 
