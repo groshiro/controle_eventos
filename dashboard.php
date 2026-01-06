@@ -215,6 +215,41 @@ try {
         font-size: 12px;
     }
 }
+        /* Container da linha de cadastro */
+.cadastro-container {
+    text-align: center;
+    margin: 20px 0 40px 0;
+}
+
+/* Botão Moderno e Negrito */
+.btn-cadastrar {
+    display: inline-block;
+    background: linear-gradient(135deg, #1167c2 0%, #004a99 100%);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px; /* Estilo pílula moderno */
+    text-decoration: none;
+    font-weight: 800; /* Extra Negrito */
+    font-size: 1.1em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(17, 103, 194, 0.4);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+/* Efeito Hover */
+.btn-cadastrar:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(17, 103, 194, 0.6);
+    background: linear-gradient(135deg, #e02810 0%, #b31d0a 100%); /* Muda para vermelho no hover */
+    color: white;
+}
+
+/* Efeito ao clicar */
+.btn-cadastrar:active {
+    transform: translateY(0);
+}
                 
     </style>
 </head>
@@ -231,7 +266,11 @@ try {
 
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
-    <p style="text-align: center;">Novo incidente: <a href="cadastro.php" style="background:#1167c2; color:white; padding:8px 15px; border-radius:5px; text-decoration:none; font-weight:bold;">Cadastrar Incidente</a></p>
+   <div class="cadastro-container">
+    <a href="cadastro.php" class="btn-cadastrar">
+        <span>+</span> Cadastrar Novo Incidente
+    </a>
+    </div>
 
     <div class="container-titulo">
         <form id="form-busca" method="GET" action="dashboard.php" style="text-align: center; margin-bottom: 30px;">
@@ -334,5 +373,6 @@ try {
     </script>
 </body>
 </html>
+
 
 
