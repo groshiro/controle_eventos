@@ -31,7 +31,7 @@ if ($pdo === null) {
 }
 
 // Configurações da Paginação
-$limite_por_pagina = 1500; 
+$limite_por_pagina = 300; 
 $pagina_atual = $_GET['pagina'] ?? 1; 
 $offset = ($pagina_atual - 1) * $limite_por_pagina;
 
@@ -683,6 +683,7 @@ try {
     </script>
 </body>
 </html>
+
 
 
 
