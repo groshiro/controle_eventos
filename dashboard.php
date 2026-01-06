@@ -1,7 +1,13 @@
 <?php
-// Arquivo: dashboard.php
+// 1. INÍCIO ABSOLUTO: Sem espaços ou linhas em branco antes da tag PHP
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
+}
+
+// Verifica login imediatamente
+if (!isset($_SESSION['usuario_logado'])) {
+    header("Location: index.php");
+    exit();
 }
 
 $alerta_erro = null;
@@ -18,7 +24,7 @@ require_once 'conexao.php';
 // Força UTF8 para evitar caracteres estranhos
 $pdo->exec("SET NAMES 'UTF8'");
 
-$nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado']; 
+$nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Usuário'; 
 
 if ($pdo === null) { 
     die("❌ Erro: Falha na conexão com o banco de dados.");
@@ -52,7 +58,9 @@ try {
 
     $stmt_consulta->execute();
     $lista_incidentes = $stmt_consulta->fetchAll();
-    $total_encontrado = count($lista_incidentes);
+    
+    // ✅ DEFINIÇÃO DA VARIÁVEL (Para evitar o erro de Undefined Variable)
+    $total_nesta_pagina = count($lista_incidentes);
 
     $total_incidentes = $total_registros_bd;
     $ultimo_cadastro = $pdo->query("SELECT data_cadastro FROM controle ORDER BY data_cadastro DESC LIMIT 1")->fetchColumn(); 
@@ -113,31 +121,18 @@ try {
         tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
 
         /* 5. PAGINAÇÃO ORGANIZADA (FLEXBOX) */
-        .pagination {
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-            gap: 5px; margin: 30px auto; padding: 10px; max-width: 95%;
-        }
-        .btn-page {
-            display: inline-flex; justify-content: center; align-items: center;
-            min-width: 35px; height: 35px; padding: 0 10px; text-decoration: none;
-            color: #007bff; border: 1px solid #007bff; border-radius: 4px;
-            background-color: transparent; transition: all 0.2s; font-size: 14px;
-        }
+        .pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; margin: 30px auto; padding: 10px; max-width: 95%; }
+        .btn-page { display: inline-flex; justify-content: center; align-items: center; min-width: 35px; height: 35px; padding: 0 10px; text-decoration: none; color: #007bff; border: 1px solid #007bff; border-radius: 4px; background-color: transparent; transition: all 0.2s; font-size: 14px; }
         .btn-page.active { background-color: #007bff; color: white; font-weight: bold; }
         .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
 
-        /* 6. FOOTER E CARD DE USUÁRIOS */
+        /* 6. ESTATÍSTICAS */
+        .destaque-pagina { margin: 15px 0; font-size: 1.1em; color: #333; font-weight: bold; }
         footer { width: 100%; border-radius: 5px; border: 1px solid #131212ff; padding: 20px 0; background-color: #b2cae2ff; max-width: 800px; margin: 40px auto 20px auto; color: #239406ff; border-top: 5px solid #3498db; }
         .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; text-decoration: none; }
         .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
-        .estatisticas p:hover { transform: translateY(-3px); box-shadow: 0 8px 12px rgba(0,0,0,0.5); }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
-
-        .header { text-align: center; padding: 20px; font-weight: bold; text-decoration: underline; font-size: 1.5em; }
-        .logout-container { position: absolute; top: 20px; right: 20px; }
-        .btn-logout { background: #0b34eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid black; }
-        .status-msg { max-width: 600px; margin: 10px auto; padding: 15px; background: #d4edda; color: #155724; border-radius: 5px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -164,16 +159,14 @@ try {
         
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <?php if (isset($_GET['status']) && $_GET['status'] == 'alterado'): ?>
-            <div class="status-msg">✅ Incidente atualizado com sucesso!</div>
-        <?php endif; ?>
-
         <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
             <h4>Estatísticas Rápidas</h4>
-            <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
-            <div class="stat-item destaque-pagina">
-            Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff;"><?php echo $total_nesta_pagina; ?></span>
-        </div>
+            <p>Total Geral: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            
+            <div class="destaque-pagina">
+                Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff;"><?php echo $total_nesta_pagina; ?></span>
+            </div>
+            
             <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
         </div>
     </div>
@@ -207,15 +200,12 @@ try {
     <div class="pagination">
         <?php if ($total_paginas > 1): ?>
             <?php $base_url = "dashboard.php?termo_busca=" . urlencode($termo_busca) . "&"; ?>
-            
             <?php if ($pagina_atual > 1): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual - 1); ?>" class="btn-page">Anterior</a>
-            <?php else: ?>
-                <span class="btn-page disabled">Anterior</span>
             <?php endif; ?>
 
             <?php 
-            $gap = 2; // Quantas páginas mostrar ao redor da atual
+            $gap = 2;
             for ($i = 1; $i <= $total_paginas; $i++): 
                 if ($i == 1 || $i == $total_paginas || ($i >= $pagina_atual - $gap && $i <= $pagina_atual + $gap)):
             ?>
@@ -229,12 +219,9 @@ try {
             
             <?php if ($pagina_atual < $total_paginas): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual + 1); ?>" class="btn-page">Próximo</a>
-            <?php else: ?>
-                <span class="btn-page disabled">Próximo</span>
             <?php endif; ?>
         <?php endif; ?>
     </div>
-    <p style="text-align: center; font-size: 0.9em; margin-bottom: 30px;">Página <?php echo $pagina_atual; ?> de <?php echo $total_paginas; ?></p>
 
     <div class="admin-header"><h3>Administração de Usuários</h3></div>
     <table class="user-table">
@@ -264,5 +251,3 @@ try {
     </script>
 </body>
 </html>
-
-
