@@ -1,27 +1,36 @@
 <?php
-// 1. SEGURANÇA E SESSÃO (DEVE SER O PRIMEIRO BLOCO)
+// 1. INÍCIO ABSOLUTO: Sem espaços ou linhas em branco antes da tag PHP
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+// Verifica login imediatamente
 if (!isset($_SESSION['usuario_logado'])) {
     header("Location: index.php");
     exit();
 }
 
-// Tratamento de alertas de erro para o Modal
-$alerta_erro = $_SESSION['alerta_erro'] ?? null;
-if ($alerta_erro) unset($_SESSION['alerta_erro']); 
+$alerta_erro = null;
+if (isset($_SESSION['alerta_erro']) && !empty($_SESSION['alerta_erro'])) {
+    $alerta_erro = $_SESSION['alerta_erro'];
+    unset($_SESSION['alerta_erro']); 
+}
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'conexao.php'; 
+
+// Força UTF8 para evitar caracteres estranhos
 $pdo->exec("SET NAMES 'UTF8'");
 
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Usuário'; 
 
-// 2. LÓGICA DE DADOS E PAGINAÇÃO
+if ($pdo === null) { 
+    die("❌ Erro: Falha na conexão com o banco de dados.");
+}
+
+// Configurações da Paginação
 $limite_por_pagina = 300; 
 $pagina_atual = $_GET['pagina'] ?? 1; 
 $offset = ($pagina_atual - 1) * $limite_por_pagina;
@@ -37,21 +46,24 @@ if (!empty($termo_busca)) {
 }
 
 try {
-    $total_registros_bd = $pdo->query("SELECT COUNT(id) FROM controle")->fetchColumn();
+    $sql_total_geral = "SELECT COUNT(id) FROM controle";
+    $total_registros_bd = $pdo->query($sql_total_geral)->fetchColumn();
     $total_paginas = ceil($total_registros_bd / $limite_por_pagina);
 
     $sql_consulta = "SELECT id, data_cadastro, incidente, evento, endereco, area, regiao, site, otdr FROM controle" . $where_clause . " ORDER BY id LIMIT :limite OFFSET :offset";
     $stmt_consulta = $pdo->prepare($sql_consulta);
     $stmt_consulta->bindValue(':limite', (int)$limite_por_pagina, PDO::PARAM_INT);
     $stmt_consulta->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-    if (!empty($termo_busca)) $stmt_consulta->bindValue(':termo', $termo_sql);
+    if (!empty($termo_busca)) { $stmt_consulta->bindValue(':termo', $termo_sql); }
 
     $stmt_consulta->execute();
     $lista_incidentes = $stmt_consulta->fetchAll();
+    
+    // ✅ DEFINIÇÃO DA VARIÁVEL (Para evitar o erro de Undefined Variable)
     $total_nesta_pagina = count($lista_incidentes);
 
     $total_incidentes = $total_registros_bd;
-    $ultimo_cadastro = $pdo->query("SELECT data_cadastro FROM controle ORDER BY data_cadastro DESC LIMIT 1")->fetchColumn() ?: 'Nenhum'; 
+    $ultimo_cadastro = $pdo->query("SELECT data_cadastro FROM controle ORDER BY data_cadastro DESC LIMIT 1")->fetchColumn(); 
     $total_usuarios = $pdo->query("SELECT COUNT(id) FROM usuario")->fetchColumn();
     $lista_usuarios = $pdo->query("SELECT id, nome, login, nivel_permissao FROM usuario ORDER BY id ASC")->fetchAll();
 
@@ -75,72 +87,424 @@ try {
         });
     </script>
     <style>
-        /* 1. ESTRUTURA E FUNDO */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: #fff; min-height: 100vh; overflow-x: hidden; position: relative; }
+        /* 1. AMPULHETA FIXED PARA MOBILE */
+        #loader-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px);
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+        .ampulheta { font-size: 80px; animation: girar 2s linear infinite; }
+        @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .texto-loader { margin-top: 20px; font-weight: bold; color: #e02810; font-size: 1.2em; text-align: center; }
+
+        /* 2. ESTILOS GLOBAIS E FUNDO */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #fff; min-height: 100vh; overflow-x: hidden; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('claro-operadora.jpg'); background-size: cover; opacity: 0.15; z-index: -3; }
         body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 10% 20%, rgba(0, 123, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(220, 53, 69, 0.05) 0%, transparent 40%); filter: blur(80px); animation: moveColors 25s ease-in-out infinite alternate; }
         @keyframes moveColors { 0% { transform: translate(0, 0); } 100% { transform: translate(2%, -2%); } }
 
-        /* 2. AMPULHETA E MODAL */
-        #loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px); flex-direction: column; justify-content: center; align-items: center; }
-        .ampulheta { font-size: 80px; animation: girar 2s linear infinite; }
-        @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .texto-loader { margin-top: 20px; font-weight: 800; color: #e02810; text-transform: uppercase; }
-
-        .modal-erro-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); }
-        .modal-erro-content { background-color: #fff; margin: 10% auto; padding: 25px; border: 3px solid #dc3545; border-radius: 12px; width: 80%; max-width: 450px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-
-        /* 3. CABEÇALHO E BOTÕES */
-        .header { width: 100%; padding: 40px 0; text-align: center; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); border-bottom: 3px solid #e02810; margin-bottom: 30px; }
-        .header h2 { margin: 0; font-size: 2.5em; color: #1a1a1a; font-weight: 800; letter-spacing: -1px; }
-        .header h2 span.user-name { color: #e02810; font-weight: 900; text-transform: uppercase; transition: 0.3s; display: inline-block; }
-        .header h2 span.user-name:hover { transform: scale(1.1); color: #007bff; }
-
-        .logout-container { position: absolute; top: 25px; right: 30px; z-index: 1000; }
-        .btn-logout { display: inline-block; padding: 10px 22px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: 800; text-transform: uppercase; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-logout:hover { background-color: #0056b3; transform: translateY(-2px); }
-
-        .btn-cadastrar { display: inline-block; background: linear-gradient(135deg, #1167c2 0%, #004a99 100%); color: white; padding: 12px 35px; border-radius: 50px; text-decoration: none; font-weight: 800; text-transform: uppercase; box-shadow: 0 4px 15px rgba(17,103,194,0.4); transition: 0.3s; }
-        .btn-cadastrar:hover { transform: translateY(-3px); background: linear-gradient(135deg, #e02810 0%, #b31d0a 100%); }
-
-        /* 4. BUSCA E TÍTULOS */
-        .btn-pesquisar { padding: 12px 28px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; text-transform: uppercase; transition: 0.3s; box-shadow: 0 4px 12px rgba(0,123,255,0.3); }
-        .btn-pesquisar:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 8px 20px rgba(0,123,255,0.5); }
-
-        #titulo-incidentes, .admin-header h3 { display: block; text-align: center; margin: 30px auto; font-size: 1.8em; color: #e02810; text-decoration: underline; font-weight: 800; transition: 0.3s; cursor: pointer; width: fit-content; }
-        #titulo-incidentes:hover, .admin-header h3:hover { color: #007bff; transform: scale(1.05); }
-
-        /* 5. TABELA COM ROLAGEM FIXA (SOLUÇÃO POSITION STICKY) */
-        .container-tabela-pai { width: 95%; margin: 0 auto; }
-        .tabela-responsiva-fixa { 
-            overflow-x: auto; 
-            max-height: 70vh; /* Permite visualizar a barra horizontal sempre na tela */
-            position: relative;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(10px);
+        /* 3. TÍTULOS COM HOVER E CENTRALIZAÇÃO */
+        #titulo-incidentes, .admin-header h3 {
+            display: block; text-align: center; margin: 30px auto; font-size: 1.8em;
+            color: #e02810ff; text-decoration: underline; transition: all 0.3s ease;
+            cursor: pointer; width: fit-content; padding: 5px 15px;
         }
-        table { border-collapse: collapse; width: 100%; min-width: 1000px; }
-        th { 
-            background-color: #007bff; color: white; padding: 15px; text-align: left; 
-            position: sticky; top: 0; z-index: 10; /* Trava o cabeçalho no topo */
+        #titulo-incidentes:hover, .admin-header h3:hover {
+            color: #007bff; transform: scale(1.05); text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
         }
-        td { border: 1px solid #ddd; padding: 12px; background-color: rgba(255,255,255,0.85); transition: 0.2s; }
+
+        /* 4. TABELAS, HOVER E ZEBRADO */
+        table, .user-table { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); border-collapse: collapse; margin: 20px auto; width: 95%; max-width: 1100px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        th { background-color: #007bff; color: white; padding: 12px 15px; text-align: left; font-weight: bold; }
+        td { border: 1px solid #ddd; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.85); transition: background-color 0.2s; }
         tr:nth-child(even) td { background-color: rgba(247, 247, 247, 0.9); }
         tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
 
-        /* 6. PAGINAÇÃO E ESTATÍSTICAS */
-        .pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 30px 0; }
-        .btn-page { display: inline-flex; justify-content: center; align-items: center; min-width: 40px; height: 40px; text-decoration: none; color: #007bff; border: 2px solid #007bff; border-radius: 8px; font-weight: 700; transition: 0.3s; }
-        .btn-page:hover:not(.active) { background: #007bff; color: white; transform: translateY(-3px); }
-        .btn-page.active { background: #007bff; color: white; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        /* 5. PAGINAÇÃO ORGANIZADA (FLEXBOX) */
+            .pagination { 
+                display: flex; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                align-items: center; 
+                gap: 8px; 
+                margin: 30px auto; 
+                padding: 10px; 
+                max-width: 95%; 
+            }
+            
+            .btn-page { 
+                display: inline-flex; 
+                justify-content: center; 
+                align-items: center; 
+                min-width: 40px; 
+                height: 40px; 
+                padding: 0 15px; 
+                text-decoration: none; 
+                color: #007bff; 
+                border: 2px solid #007bff; 
+                border-radius: 8px; 
+                background-color: transparent; 
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+                font-size: 14px; 
+                font-weight: 700; /* Negrito moderno */
+            }
+            
+            /* === EFEITO HOVER  === */
+            .btn-page:not(.active):not(.disabled):hover {
+                background-color: #007bff;
+                color: white;
+                transform: translateY(-3px); /* Leve subida */
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+                border-color: #0056b3;
+            }
+            
+            .btn-page.active { 
+                background-color: #007bff; 
+                color: white; 
+                font-weight: 800; 
+                border-color: #0056b3;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            }
+            
+            .btn-page.disabled { 
+                color: #ccc; 
+                border-color: #ddd; 
+                cursor: not-allowed; 
+                background-color: #f9f9f9; 
+                opacity: 0.6;
+            }
 
-        .card-stats h4, .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; padding-bottom: 5px; border-bottom: 2px solid #db4d34ff; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
-        .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: 0.3s; margin: 10px; font-weight: bold; }
-        .estatisticas p:hover { transform: translateY(-3px); box-shadow: 0 8px 12px rgba(0,0,0,0.5); }
-        .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; }
+        /* Estilo para a Tabela de Usuários (Apenas ajustes específicos) */
+    .user-table {
+        width: 90%; 
+        max-width: 800px; /* Mantém a largura específica para a tabela de admin */
+    }
 
-        footer { width: 100%; max-width: 800px; margin: 40px auto 20px auto; background: #b2cae2; border-radius: 5px; border-top: 5px solid #3498db; padding: 20px 0; }
+    /* Estilo do Link de Edição/Ações */
+    table a, .user-table a {
+        color: #17a2b8; 
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    table a:hover, .user-table a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    /* ======================================================= */
+    /* 4. ESTILOS DE ADMIN/FOOTER */
+    /* ======================================================= */
+
+    .admin-header {
+        margin-top: 50px;
+        text-align: center;
+    }
+
+    /* Estilos para o Rodapé (Footer) */
+    footer {
+        width: 100%;
+        border-radius: 5px;
+        border: 1px solid #131212ff;
+        padding: 20px 0; 
+        background-color: #b2cae2ff; 
+        max-width: 800px;
+        margin: 20px auto; /* Mantendo a margem do footer centralizada */
+        color: #239406ff; 
+        border-top: 5px solid #3498db; 
+    }
+
+    /* Container Principal das Estatísticas */
+    .estatisticas {
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
+        padding: 0 20px;
+    }
+
+    /* Título Unificado (Estatísticas Rápidas - Card e Footer) */
+    .estatisticas h3, .card-stats h4 {
+        font-size: 1.5em;
+        color: #e20e0eff; 
+        margin-bottom: 20px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #db4d34ff;
+        letter-spacing: 1px;
+    }
+
+    /* Estilo para a Linha de Texto da Estatística */
+    .estatisticas p {
+        font-size: 1.1em;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        background-color: #34495e; 
+        color: #ecf0f1;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease-in-out; 
+        margin: 10px 20px; 
+    }
+
+    /* EFEITO DE HOVER (Animação) */
+    .estatisticas p:hover {
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+        transform: translateY(-3px); 
+        border: 1px solid #3498db; 
+        cursor: pointer;
+    }
+
+    /* Estilo para o Número em Destaque */
+    .estatisticas strong {
+        color: #e67e22; 
+        font-size: 1.5em;
+        margin-left: 10px;
+        font-weight: bold;
+    }
+        /* Container do Cabeçalho */
+        .header {
+            width: 100%;
+            padding: 40px 0;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.4); /* Fundo vidro um pouco mais visível */
+            backdrop-filter: blur(10px);
+            border-bottom: 3px solid #e02810; /* Linha vermelha mais grossa e marcante */
+            margin-bottom: 30px;
+        }
+        
+        /* Estilo do Texto H2 principal (Negrito e Moderno) */
+        .header h2 {
+            margin: 0;
+            font-size: 2.5em; /* Aumentado levemente */
+            color: #1a1a1a; /* Preto mais profundo para contraste */
+            font-weight: 800; /* Negrito extra para ar moderno */
+            letter-spacing: -1px; /* Letras mais próximas (estilo Apple/Moderno) */
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+        
+        /* Destaque para o nome do usuário */
+        .header h2 span.user-name {
+            color: #e02810; /* Vermelho Claro */
+            font-weight: 900; /* Peso máximo */
+            text-transform: uppercase; /* Nome em CAIXA ALTA para autoridade */
+            position: relative;
+            display: inline-block;
+            padding: 0 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* Efeito ao passar o mouse */
+        .header h2 span.user-name:hover {
+            transform: scale(1.1); /* Aumenta levemente */
+            color: #007bff; /* Troca para azul no hover para indicar interatividade */
+            text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        /* Container que fixa o botão no topo direito */
+        .logout-container {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+/* Estilização do Botão Azul */
+.btn-logout {
+    display: inline-block;
+    padding: 10px 22px;
+    background-color: #007bff; /* Azul padrão */
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Efeito Hover (ao passar o mouse) */
+.btn-logout:hover {
+    background-color: #0056b3; /* Azul mais escuro */
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ajuste para Mobile (Celular) */
+@media (max-width: 600px) {
+    .logout-container {
+        top: 15px;
+        right: 15px;
+    }
+    .btn-logout {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}
+        /* Container da linha de cadastro */
+.cadastro-container {
+    text-align: center;
+    margin: 20px 0 40px 0;
+}
+
+/* Botão Moderno e Negrito */
+.btn-cadastrar {
+    display: inline-block;
+    background: linear-gradient(135deg, #1167c2 0%, #004a99 100%);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px; /* Estilo pílula moderno */
+    text-decoration: none;
+    font-weight: 800; /* Extra Negrito */
+    font-size: 1.1em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(17, 103, 194, 0.4);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+/* Efeito Hover */
+.btn-cadastrar:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(17, 103, 194, 0.6);
+    background: linear-gradient(135deg, #e02810 0%, #b31d0a 100%); /* Muda para vermelho no hover */
+    color: white;
+}
+
+/* Efeito ao clicar */
+.btn-cadastrar:active {
+    transform: translateY(0);
+}
+        /* Container do Formulário de Busca */
+#form-busca {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+/* Estilo do Label (Negrito Moderno) */
+#form-busca label {
+    font-weight: 800;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+}
+
+/* Estilo do Campo de Input */
+#form-busca input[type="text"] {
+    width: 280px;
+    padding: 12px 18px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+#form-busca input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.2);
+    background: #fff;
+}
+
+/* Botão Pesquisar - ALTA PERFORMANCE */
+.btn-pesquisar {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 800; /* Negrito Moderno */
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* EFEITO HOVER */
+.btn-pesquisar:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5);
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+}
+
+/* Feedback de clique */
+.btn-pesquisar:active {
+    transform: scale(0.98);
+}
+ .modal-erro-overlay {
+    /* Esconde o modal por padrão */
+    display: none; 
+    position: fixed; /* Fixa na tela */
+    z-index: 9999; /* Garante que fique acima de tudo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo escuro semi-transparente */
+    overflow: auto; 
+}
+
+.modal-erro-content {
+    background-color: #fff;
+    margin: 10% auto; /* Centraliza verticalmente e horizontalmente (10% do topo) */
+    padding: 20px;
+    border: 3px solid #dc3545; /* Borda vermelha de erro */
+    border-radius: 8px;
+    width: 80%;
+    max-width: 450px; /* Limita a largura para melhor visualização */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.modal-erro-titulo {
+    color: #dc3545;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+#modal-erro-texto {
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.modal-erro-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.modal-erro-close:hover,
+.modal-erro-close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-fechar-modal {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-fechar-modal:hover {
+    background-color: #0056b3;
+}
+                
     </style>
 </head>
 <body>
@@ -150,62 +514,67 @@ try {
         <div class="texto-loader">Buscando informações no sistema...</div>
     </div>
 
+    <div class="header">
+        <h2>Bem-vindo <?php echo htmlspecialchars($nome_do_usuario); ?>!</h2>
+    </div>
+
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
-    <div class="header">
-        <h2>BEM-VINDO, <span class="user-name"><?php echo htmlspecialchars($nome_do_usuario); ?></span>!</h2>
+   <div class="cadastro-container">
+    <a href="cadastro.php" class="btn-cadastrar">
+        Cadastrar Novo Incidente
+    </a>
     </div>
 
-    <div class="cadastro-container">
-        <a href="cadastro.php" class="btn-cadastrar">+ CADASTRAR NOVO INCIDENTE</a>
-    </div>
-
-    <div class="container-titulo">
+       <div class="container-titulo">
         <form id="form-busca" method="GET" action="dashboard.php">
-            <label>BUSCAR:</label>
+            <label>Buscar:</label>
             <input type="text" name="termo_busca" placeholder="Digite sua busca..." value="<?php echo htmlspecialchars($termo_busca); ?>">
             <button type="submit" class="btn-pesquisar">Pesquisar</button>
         </form>
-        
-        <div class="card-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: rgba(255, 255, 255, 0.6); border-radius: 12px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <h4>ESTATÍSTICAS RÁPIDAS</h4>
-            <p style="font-size: 1.1em;">Total Geral: <strong><?php echo $total_incidentes; ?></strong></p>
-            <p style="font-size: 1.1em;">Último Cadastro: <strong><?php echo $ultimo_cadastro; ?></strong></p>
-            <div style="border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;">
-                INCIDENTES NESTA PÁGINA: <span style="font-size: 1.5em; color:#007bff; font-weight: 900;"><?php echo $total_nesta_pagina; ?></span>
-            </div>
-            <div id="chart_div" style="width: 100%; height: 120px; display: flex; justify-content: center; margin-top: 10px;"></div>
         </div>
+        
+        <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <h3 id="titulo-incidentes">INCIDENTES CADASTRADOS</h3>
+        <div class="card-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: rgba(255, 255, 255, 0.6); border-radius: 12px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            
+            <h4>ESTATÍSTICAS RÁPIDAS</h4>
+            
+            <p style="font-size: 1.1em;">Total Geral: <strong><?php echo $total_incidentes; ?></strong></p>
+            <p style="font-size: 1.1em;">Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            
+            <div class="destaque-pagina" style="border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;">
+                Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff; font-weight: 900;"><?php echo $total_nesta_pagina; ?></span>
+            </div>
+            
+            <div id="chart_div" style="width: 400px; height: 120px; margin: 10px auto;"></div>
+        </div>
     </div>
 
-    <div class="container-tabela-pai">
-        <div class="tabela-responsiva-fixa">
-            <table>
-                <thead>
-                    <tr><th>ID</th><th>INCIDENTE</th><th>EVENTO</th><th>ENDEREÇO</th><th>ÁREA</th><th>REGIÃO</th><th>SITE</th><th>OTDR</th><th>AÇÕES</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($lista_incidentes as $c): ?>
-                    <tr>
-                        <td><?php echo $c['id']; ?></td>
-                        <td><?php echo htmlspecialchars($c['incidente'] ?: '-'); ?></td>
-                        <td><?php echo htmlspecialchars($c['evento'] ?: '-'); ?></td>
-                        <td><?php echo htmlspecialchars($c['endereco'] ?: '-'); ?></td>
-                        <td><?php echo htmlspecialchars($c['area'] ?: '-'); ?></td>
-                        <td><?php echo htmlspecialchars($c['regiao'] ?: '-'); ?></td>
-                        <td><?php echo htmlspecialchars($c['site'] ?: '-'); ?></td>
-                        <td><?php echo htmlspecialchars($c['otdr'] ?: '-'); ?></td>
-                        <td style="white-space: nowrap;">
-                            <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:800;">EDITAR</a> | 
-                            <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('EXCLUIR?')" style="color:red; font-weight:800;">EXCLUIR</a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Incidente</th><th>Evento</th><th>Endereço</th><th>Área</th><th>Região</th><th>Site</th><th>OTDR</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <?php foreach ($lista_incidentes as $c): ?>
+                <tr>
+                    <td><?php echo $c['id']; ?></td>
+                    <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
+                    <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
+                    <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
+                    <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
+                    <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
+                    <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
+                    <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
+                    <td>
+                        <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
+                        <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 
     <div class="pagination">
@@ -214,66 +583,101 @@ try {
             <?php if ($pagina_atual > 1): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual - 1); ?>" class="btn-page">Anterior</a>
             <?php endif; ?>
+
             <?php 
+            $gap = 2;
             for ($i = 1; $i <= $total_paginas; $i++): 
-                if ($i == 1 || $i == $total_paginas || ($i >= $pagina_atual - 2 && $i <= $pagina_atual + 2)): ?>
+                if ($i == 1 || $i == $total_paginas || ($i >= $pagina_atual - $gap && $i <= $pagina_atual + $gap)):
+            ?>
                 <a href="<?php echo $base_url . 'pagina=' . $i; ?>" class="btn-page <?php echo ($i == $pagina_atual) ? 'active' : ''; ?>"><?php echo $i; ?></a>
-            <?php elseif ($i == $pagina_atual - 3 || $i == $pagina_atual + 3): echo "<span class='btn-page disabled'>...</span>"; endif; endfor; ?>
+            <?php 
+                elseif ($i == $pagina_atual - $gap - 1 || $i == $pagina_atual + $gap + 1):
+                    echo "<span class='btn-page disabled'>...</span>";
+                endif;
+            endfor; 
+            ?>
+            
             <?php if ($pagina_atual < $total_paginas): ?>
                 <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual + 1); ?>" class="btn-page">Próximo</a>
             <?php endif; ?>
         <?php endif; ?>
     </div>
 
-    <div class="admin-header"><h3>ADMINISTRAÇÃO DE USUÁRIOS</h3></div>
-    <table class="user-table" style="margin-bottom: 50px;">
-        <thead><tr><th>ID</th><th>NOME</th><th>LOGIN</th><th>PERMISSÃO</th><th>AÇÕES</th></tr></thead>
-        <tbody>
-            <?php foreach ($lista_usuarios as $u): ?>
-            <tr>
-                <td><?php echo $u['id']; ?></td>
-                <td><?php echo htmlspecialchars($u['nome']); ?></td>
-                <td><?php echo htmlspecialchars($u['login']); ?></td>
-                <td><span style="background:#eee; padding:5px 10px; border-radius:4px; font-weight:800;"><?php echo $u['nivel_permissao']; ?></span></td>
-                <td><a href="alterar_usuario.php?id=<?php echo $u['id']; ?>" style="color:blue; font-weight:800;">EDITAR</a></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="admin-header">
+    <h3>Administração de Usuários</h3>
+</div>
+
+<?php if (count($lista_usuarios) > 0): ?>
+<table class="user-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Login</th>
+            <th>Permissão Atual</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($lista_usuarios as $usuario): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($usuario['id'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($usuario['nome'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($usuario['login'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($usuario['nivel_permissao'] ?? ''); ?></td>
+            <td>
+                <a href="alterar_usuario.php?id=<?php echo $usuario['id']; ?>">Editar Usuário</a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<?php else: ?>
+    <p class="no-user-message">Nenhum usuário encontrado na tabela 'usuario'</p>
+<?php endif; ?>
 
     <footer>
         <div class="estatisticas">
-            <h3>ESTATÍSTICAS RÁPIDAS</h3>
-            <p>USUÁRIOS CADASTRADOS: <strong><?php echo $total_usuarios; ?></strong></p>
+            <h3>Estatísticas Rápidas</h3>
+            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
         </div>
     </footer>
-
-    <div id="modal-erro" class="modal-erro-overlay">
+    <!-- Modal de Erro -->
+        <div id="modal-erro" class="modal-erro-overlay">
         <div class="modal-erro-content">
-            <h4 class="modal-erro-titulo">⚠️ Erro de Permissão</h4>
-            <p id="modal-erro-texto"></p>
-            <button onclick="fecharModal()" class="btn-pesquisar">Entendi</button>
-        </div>
+        <span class="modal-erro-close" onclick="fecharModal()">×</span>
+        <h4 class="modal-erro-titulo">⚠️ Erro de Permissão</h4>
+        <p id="modal-erro-texto"></p>
+        <button onclick="fecharModal()" class="btn-fechar-modal">Entendi</button>
     </div>
-
-    
-
     <script>
-        // Modal de Erro
-        const mensagemErro = <?php echo json_encode($alerta_erro ?? ''); ?>;
-        const modal = document.getElementById('modal-erro');
-        if (mensagemErro) {
-            document.getElementById('modal-erro-texto').innerText = mensagemErro;
-            modal.style.display = 'block';
-        }
-        function fecharModal() { modal.style.display = 'none'; }
+    // Variável JS para a mensagem de erro (escapa caracteres especiais para segurança)
+    const mensagemErro = <?php echo json_encode($alerta_erro ?? ''); ?>;
+    
+    // Função para fechar o modal (chamada pelos botões)
+    function fecharModal() {
+        document.getElementById('modal-erro').style.display = 'none';
+    }
 
-        // Loader
+    if (mensagemErro) {
+        // 1. Encontra os elementos
+        const modal = document.getElementById('modal-erro');
+        const texto = document.getElementById('modal-erro-texto');
+        
+        // 2. Insere o texto da mensagem
+        texto.innerText = mensagemErro;
+        
+        // 3. Exibe o modal (ativa o CSS)
+        modal.style.display = 'block';
+    }
+    </script>
+     </div>
+    <script>
         const loader = document.getElementById('loader-overlay');
         document.getElementById('form-busca').addEventListener('submit', () => loader.style.display = 'flex');
         document.querySelectorAll('.btn-page').forEach(btn => {
             btn.addEventListener('click', function() {
-                if(!this.classList.contains('active')) loader.style.display = 'flex';
+                if(!this.classList.contains('active') && !this.classList.contains('disabled')) loader.style.display = 'flex';
             });
         });
     </script>
