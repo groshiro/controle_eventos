@@ -121,10 +121,58 @@ try {
         tbody tr:hover td { background-color: rgba(233, 247, 255, 0.95) !important; cursor: pointer; }
 
         /* 5. PAGINAÇÃO ORGANIZADA (FLEXBOX) */
-        .pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; margin: 30px auto; padding: 10px; max-width: 95%; }
-        .btn-page { display: inline-flex; justify-content: center; align-items: center; min-width: 35px; height: 35px; padding: 0 10px; text-decoration: none; color: #007bff; border: 1px solid #007bff; border-radius: 4px; background-color: transparent; transition: all 0.2s; font-size: 14px; }
-        .btn-page.active { background-color: #007bff; color: white; font-weight: bold; }
-        .btn-page.disabled { color: #ccc; border-color: #ccc; cursor: default; background-color: #f9f9f9; }
+            .pagination { 
+                display: flex; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                align-items: center; 
+                gap: 8px; 
+                margin: 30px auto; 
+                padding: 10px; 
+                max-width: 95%; 
+            }
+            
+            .btn-page { 
+                display: inline-flex; 
+                justify-content: center; 
+                align-items: center; 
+                min-width: 40px; 
+                height: 40px; 
+                padding: 0 15px; 
+                text-decoration: none; 
+                color: #007bff; 
+                border: 2px solid #007bff; 
+                border-radius: 8px; 
+                background-color: transparent; 
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+                font-size: 14px; 
+                font-weight: 700; /* Negrito moderno */
+            }
+            
+            /* === EFEITO HOVER (O que você pediu) === */
+            .btn-page:not(.active):not(.disabled):hover {
+                background-color: #007bff;
+                color: white;
+                transform: translateY(-3px); /* Leve subida */
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+                border-color: #0056b3;
+            }
+            
+            .btn-page.active { 
+                background-color: #007bff; 
+                color: white; 
+                font-weight: 800; 
+                border-color: #0056b3;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            }
+            
+            .btn-page.disabled { 
+                color: #ccc; 
+                border-color: #ddd; 
+                cursor: not-allowed; 
+                background-color: #f9f9f9; 
+                opacity: 0.6;
+            }
 
         /* 6. ESTATÍSTICAS */
         .destaque-pagina { margin: 15px 0; font-size: 1.1em; color: #333; font-weight: bold; }
@@ -250,6 +298,69 @@ try {
 .btn-cadastrar:active {
     transform: translateY(0);
 }
+        /* Container do Formulário de Busca */
+#form-busca {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+/* Estilo do Label (Negrito Moderno) */
+#form-busca label {
+    font-weight: 800;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.95em;
+    letter-spacing: 0.5px;
+}
+
+/* Estilo do Campo de Input */
+#form-busca input[type="text"] {
+    width: 280px;
+    padding: 12px 18px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+#form-busca input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.2);
+    background: #fff;
+}
+
+/* Botão Pesquisar - ALTA PERFORMANCE */
+.btn-pesquisar {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 800; /* Negrito Moderno */
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* EFEITO HOVER (O que você pediu) */
+.btn-pesquisar:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5);
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+}
+
+/* Feedback de clique */
+.btn-pesquisar:active {
+    transform: scale(0.98);
+}
                 
     </style>
 </head>
@@ -268,16 +379,17 @@ try {
 
    <div class="cadastro-container">
     <a href="cadastro.php" class="btn-cadastrar">
-        <span>+</span> Cadastrar Novo Incidente
+        Cadastrar Novo Incidente
     </a>
     </div>
 
-    <div class="container-titulo">
-        <form id="form-busca" method="GET" action="dashboard.php" style="text-align: center; margin-bottom: 30px;">
-            <label style="font-weight: bold; margin-right: 10px;">Buscar:</label>
-            <input type="text" name="termo_busca" style="width: 250px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" value="<?php echo htmlspecialchars($termo_busca); ?>">
-            <button type="submit" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Pesquisar</button>
+       <div class="container-titulo">
+        <form id="form-busca" method="GET" action="dashboard.php">
+            <label>Buscar:</label>
+            <input type="text" name="termo_busca" placeholder="Digite sua busca..." value="<?php echo htmlspecialchars($termo_busca); ?>">
+            <button type="submit" class="btn-pesquisar">Pesquisar</button>
         </form>
+        </div>
         
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
@@ -373,6 +485,7 @@ try {
     </script>
 </body>
 </html>
+
 
 
 
