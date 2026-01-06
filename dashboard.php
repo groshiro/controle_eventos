@@ -171,6 +171,9 @@ try {
         <div style="text-align: center; margin-bottom: 30px; padding: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px; max-width: 600px; margin: 20px auto;">
             <h4>Estatísticas Rápidas</h4>
             <p>Total de Incidentes: <strong><?php echo $total_incidentes; ?></strong><br>Último: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            <div class="stat-item destaque-pagina">
+            Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff;"><?php echo $total_nesta_pagina; ?></span>
+        </div>
             <div id="chart_div" style="width: 400px; height: 120px; margin: 0 auto;"></div>
         </div>
     </div>
@@ -261,4 +264,5 @@ try {
     </script>
 </body>
 </html>
+
 
