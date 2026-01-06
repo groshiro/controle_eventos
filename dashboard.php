@@ -133,6 +133,86 @@ try {
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; text-decoration: none; }
         .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
+        /* Container do Cabeçalho de Boas-vindas */
+        .header {
+            width: 100%;
+            padding: 30px 0;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2); /* Efeito translúcido */
+            backdrop-filter: blur(5px);
+            border-bottom: 2px solid rgba(224, 40, 16, 0.3); /* Linha vermelha suave */
+            margin-bottom: 20px;
+        }
+        
+        /* Estilo do Texto H2 */
+        .header h2 {
+            margin: 0;
+            font-size: 2.2em;
+            color: #333;
+            font-weight: 300; /* Letra mais fina e elegante */
+            letter-spacing: 1px;
+        }
+        
+        /* Destaque para o nome do usuário */
+        .header h2 span.user-name {
+            color: #e02810; /* Vermelho Claro */
+            font-weight: 700;
+            text-transform: capitalize;
+            position: relative;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Efeito ao passar o mouse sobre o nome */
+        .header h2 span.user-name:hover {
+            transform: translateY(-2px);
+            text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        /* Container que fixa o botão no topo direito */
+.logout-container {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    z-index: 1000;
+}
+
+/* Estilização do Botão Azul */
+.btn-logout {
+    display: inline-block;
+    padding: 10px 22px;
+    background-color: #007bff; /* Azul padrão */
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Efeito Hover (ao passar o mouse) */
+.btn-logout:hover {
+    background-color: #0056b3; /* Azul mais escuro */
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ajuste para Mobile (Celular) */
+@media (max-width: 600px) {
+    .logout-container {
+        top: 15px;
+        right: 15px;
+    }
+    .btn-logout {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}
+                
     </style>
 </head>
 <body>
@@ -251,3 +331,4 @@ try {
     </script>
 </body>
 </html>
+
