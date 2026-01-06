@@ -133,40 +133,43 @@ try {
         .estatisticas h3 { font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px; border-bottom: 2px solid #db4d34ff; text-decoration: none; }
         .estatisticas p { font-size: 1.1em; padding: 15px 30px; border-radius: 8px; background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); transition: all 0.3s; margin: 10px 20px; width: fit-content; }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
-        /* Container do Cabeçalho de Boas-vindas */
+        /* Container do Cabeçalho */
         .header {
             width: 100%;
-            padding: 30px 0;
+            padding: 40px 0;
             text-align: center;
-            background: rgba(255, 255, 255, 0.2); /* Efeito translúcido */
-            backdrop-filter: blur(5px);
-            border-bottom: 2px solid rgba(224, 40, 16, 0.3); /* Linha vermelha suave */
-            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.4); /* Fundo vidro um pouco mais visível */
+            backdrop-filter: blur(10px);
+            border-bottom: 3px solid #e02810; /* Linha vermelha mais grossa e marcante */
+            margin-bottom: 30px;
         }
         
-        /* Estilo do Texto H2 */
+        /* Estilo do Texto H2 principal (Negrito e Moderno) */
         .header h2 {
             margin: 0;
-            font-size: 2.2em;
-            color: #333;
-            font-weight: 300; /* Letra mais fina e elegante */
-            letter-spacing: 1px;
+            font-size: 2.5em; /* Aumentado levemente */
+            color: #1a1a1a; /* Preto mais profundo para contraste */
+            font-weight: 800; /* Negrito extra para ar moderno */
+            letter-spacing: -1px; /* Letras mais próximas (estilo Apple/Moderno) */
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
         }
         
         /* Destaque para o nome do usuário */
         .header h2 span.user-name {
             color: #e02810; /* Vermelho Claro */
-            font-weight: 700;
-            text-transform: capitalize;
+            font-weight: 900; /* Peso máximo */
+            text-transform: uppercase; /* Nome em CAIXA ALTA para autoridade */
             position: relative;
             display: inline-block;
-            transition: transform 0.3s ease;
+            padding: 0 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        /* Efeito ao passar o mouse sobre o nome */
+        /* Efeito ao passar o mouse */
         .header h2 span.user-name:hover {
-            transform: translateY(-2px);
-            text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+            transform: scale(1.1); /* Aumenta levemente */
+            color: #007bff; /* Troca para azul no hover para indicar interatividade */
+            text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2);
         }
         /* Container que fixa o botão no topo direito */
 .logout-container {
@@ -331,4 +334,5 @@ try {
     </script>
 </body>
 </html>
+
 
