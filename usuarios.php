@@ -6,10 +6,11 @@ if (!isset($_SESSION['usuario_logado'])) {
     exit();
 }
 
-$alerta_erro = null;
-if (isset($_SESSION['alerta_erro']) && !empty($_SESSION['alerta_erro'])) {
-    $alerta_erro = $_SESSION['alerta_erro'];
-    unset($_SESSION['alerta_erro']); 
+// Segurança extra: Apenas Admin acessa esta página
+if ($_SESSION['nivel_permissao'] !== 'ADMIN') {
+    $_SESSION['alerta_erro'] = "Acesso restrito a administradores.";
+    header("Location: dashboard.php");
+    exit();
 }
 
 require_once 'conexao.php'; 
@@ -17,35 +18,9 @@ $pdo->exec("SET NAMES 'UTF8'");
 
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Usuário'; 
 
-// Configurações da Paginação
-$limite_por_pagina = 300; 
-$pagina_atual = $_GET['pagina'] ?? 1; 
-$offset = ($pagina_atual - 1) * $limite_por_pagina;
-
-$termo_busca = $_GET['termo_busca'] ?? '';
-$where_clause = '';
-
-if (!empty($termo_busca)) {
-    $termo_sql = "%" . $termo_busca . "%";
-    $where_clause = " WHERE incidente ILIKE :termo OR evento ILIKE :termo OR endereco ILIKE :termo OR area ILIKE :termo OR regiao ILIKE :termo OR site ILIKE :termo OR otdr ILIKE :termo OR CAST(id AS TEXT) ILIKE :termo";
-}
-
 try {
-    $total_registros_bd = $pdo->query("SELECT COUNT(id) FROM controle")->fetchColumn();
-    $total_paginas = ceil($total_registros_bd / $limite_por_pagina);
-
-    $sql_consulta = "SELECT id, data_cadastro, incidente, evento, endereco, area, regiao, site, otdr FROM controle" . $where_clause . " ORDER BY id LIMIT :limite OFFSET :offset";
-    $stmt_consulta = $pdo->prepare($sql_consulta);
-    $stmt_consulta->bindValue(':limite', (int)$limite_por_pagina, PDO::PARAM_INT);
-    $stmt_consulta->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-    if (!empty($termo_busca)) { $stmt_consulta->bindValue(':termo', $termo_sql); }
-
-    $stmt_consulta->execute();
-    $lista_incidentes = $stmt_consulta->fetchAll();
-    $total_nesta_pagina = count($lista_incidentes);
-    $total_incidentes = $total_registros_bd;
-    $ultimo_cadastro = $pdo->query("SELECT data_cadastro FROM controle ORDER BY data_cadastro DESC LIMIT 1")->fetchColumn(); 
-
+    $total_usuarios = $pdo->query("SELECT COUNT(id) FROM usuario")->fetchColumn();
+    $lista_usuarios = $pdo->query("SELECT id, nome, login,email, nivel_permissao FROM usuario ORDER BY id ASC")->fetchAll();
 } catch (PDOException $e) { die("Erro ao consultar: " . $e->getMessage()); }
 ?>
 <!DOCTYPE html>
@@ -53,18 +28,8 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Sistema de Controle</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load('current', {'packages':['gauge']});
-        google.charts.setOnLoadCallback(() => {
-            var data = google.visualization.arrayToDataTable([['Label', 'Value'],['Incidentes', <?php echo $total_incidentes; ?>]]);
-            var options = { width: 400, height: 120, redFrom: 0, redTo: 3000, yellowFrom: 3001, yellowTo: 10000, greenFrom: 10001, greenTo: 25000, max: 25000 };
-            new google.visualization.Gauge(document.getElementById('chart_div')).draw(data, options);
-        });
-    </script>
+    <title>Gestão de Usuários | Sistema</title>
     <style>
-        /* MANTIDO SEU CSS ORIGINAL SEM ALTERAÇÃO */
         #loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px); flex-direction: column; justify-content: center; align-items: center; }
         .ampulheta { font-size: 80px; animation: girar 2s linear infinite; }
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -129,117 +94,52 @@ try {
     </style>
 </head>
 <body>
-    <div id="loader-overlay">
-        <div class="ampulheta">⏳</div>
-        <div class="texto-loader">Buscando informações no sistema...</div>
-    </div>
+    <div id="loader-overlay"><div class="ampulheta">⏳</div></div>
 
     <div class="header">
-        <h2>Bem-vindo <span class="user-name"><?php echo htmlspecialchars($nome_do_usuario); ?></span>!</h2>
+        <h2>Gestão de <span class="user-name">Usuários</span></h2>
     </div>
 
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
     <nav style="text-align: center; margin-bottom: 20px;">
-        <a href="dashboard.php" class="btn-page active">Incidentes</a>
-        <a href="usuarios.php" class="btn-page">Gestão de Usuários</a>
+        <a href="dashboard.php" class="btn-page">Incidentes</a>
+        <a href="usuarios.php" class="btn-page active">Gestão de Usuários</a>
     </nav>
 
-    <div class="cadastro-container">
-        <a href="cadastro.php" class="btn-cadastrar">Cadastrar Novo Incidente</a>
+    <div class="admin-header">
+        <h3>Usuários Cadastrados no Sistema</h3>
     </div>
 
-    <div class="container-titulo">
-        <form id="form-busca" method="GET" action="dashboard.php">
-            <label>Buscar:</label>
-            <input type="text" name="termo_busca" placeholder="Digite sua busca..." value="<?php echo htmlspecialchars($termo_busca); ?>">
-            <button type="submit" class="btn-pesquisar">Pesquisar</button>
-        </form>
-    </div>
-        
-    <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
-
-    <div class="card-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: rgba(255, 255, 255, 0.6); border-radius: 12px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-        <h4>ESTATÍSTICAS RÁPIDAS</h4>
-        <p style="font-size: 1.1em;">Total Geral: <strong><?php echo $total_incidentes; ?></strong></p>
-        <p style="font-size: 1.1em;">Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
-        <div class="destaque-pagina" style="border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;">
-            Incidentes exibidos nesta página: <span style="font-size: 1.5em; color:#007bff; font-weight: 900;"><?php echo $total_nesta_pagina; ?></span>
-        </div>
-        <div id="chart_div" style="width: 400px; height: 120px; margin: 10px auto;"></div>
-    </div>
-
-    <div class="tabela-container-scroll">
-    <table>
+    <table class="user-table">
         <thead>
-            <tr><th>ID</th><th>Incidente</th><th>Evento</th><th>Endereço</th><th>Área</th><th>Região</th><th>Site</th><th>OTDR</th><th>Ações</th></tr>
+            <tr><th>ID</th><th>Nome</th><th>Login</th><th>Email</th><th>Permissão Atual</th><th>Ações</th></tr>
         </thead>
         <tbody>
-            <?php foreach ($lista_incidentes as $c): ?>
+            <?php foreach ($lista_usuarios as $usuario): ?>
             <tr>
-                <td><?php echo $c['id']; ?></td>
-                <td><?php echo !empty($c['incidente']) ? htmlspecialchars($c['incidente']) : '-'; ?></td>
-                <td><?php echo !empty($c['evento']) ? htmlspecialchars($c['evento']) : '-'; ?></td>
-                <td><?php echo !empty($c['endereco']) ? htmlspecialchars($c['endereco']) : '-'; ?></td>
-                <td><?php echo !empty($c['area']) ? htmlspecialchars($c['area']) : '-'; ?></td>
-                <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
-                <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
-                <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
-                <td>
-                    <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> | 
-                    <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
-                </td>
+                <td><?php echo htmlspecialchars($usuario['id']); ?></td>
+                <td><?php echo htmlspecialchars($usuario['nome']); ?></td>
+                <td><?php echo htmlspecialchars($usuario['login']); ?></td>
+                <td><?php echo htmlspecialchars($usuario['email']); ?></td>
+                <td><?php echo htmlspecialchars($usuario['nivel_permissao']); ?></td>
+                <td><a href="alterar_usuario.php?id=<?php echo $usuario['id']; ?>">Editar Usuário</a></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    </div>
 
-    <div class="pagination">
-        <?php if ($total_paginas > 1): ?>
-            <?php $base_url = "dashboard.php?termo_busca=" . urlencode($termo_busca) . "&"; ?>
-            <?php if ($pagina_atual > 1): ?>
-                <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual - 1); ?>" class="btn-page">Anterior</a>
-            <?php endif; ?>
-            <?php 
-            $gap = 2;
-            for ($i = 1; $i <= $total_paginas; $i++): 
-                if ($i == 1 || $i == $total_paginas || ($i >= $pagina_atual - $gap && $i <= $pagina_atual + $gap)):
-            ?>
-                <a href="<?php echo $base_url . 'pagina=' . $i; ?>" class="btn-page <?php echo ($i == $pagina_atual) ? 'active' : ''; ?>"><?php echo $i; ?></a>
-            <?php 
-                elseif ($i == $pagina_atual - $gap - 1 || $i == $pagina_atual + $gap + 1):
-                    echo "<span class='btn-page disabled'>...</span>";
-                endif;
-            endfor; 
-            ?>
-            <?php if ($pagina_atual < $total_paginas): ?>
-                <a href="<?php echo $base_url . 'pagina=' . ($pagina_atual + 1); ?>" class="btn-page">Próximo</a>
-            <?php endif; ?>
-        <?php endif; ?>
-    </div>
-
-    <div id="modal-erro" class="modal-erro-overlay">
-        <div class="modal-erro-content">
-            <span class="modal-erro-close" onclick="fecharModal()">×</span>
-            <h4 class="modal-erro-titulo">⚠️ Erro de Permissão</h4>
-            <p id="modal-erro-texto"></p>
-            <button onclick="fecharModal()" class="btn-fechar-modal">Entendi</button>
+    <footer>
+        <div class="estatisticas">
+            <h3>Estatísticas Rápidas</h3>
+            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
         </div>
-    </div>
+    </footer>
 
     <script>
-        const loader = document.getElementById('loader-overlay');
-        const mensagemErro = <?php echo json_encode($alerta_erro ?? ''); ?>;
-        function fecharModal() { document.getElementById('modal-erro').style.display = 'none'; }
-        if (mensagemErro) {
-            document.getElementById('modal-erro-texto').innerText = mensagemErro;
-            document.getElementById('modal-erro').style.display = 'block';
-        }
-        document.getElementById('form-busca').addEventListener('submit', () => loader.style.display = 'flex');
         document.querySelectorAll('.btn-page').forEach(btn => {
             btn.addEventListener('click', function() {
-                if(!this.classList.contains('active') && !this.classList.contains('disabled')) loader.style.display = 'flex';
+                if(!this.classList.contains('active')) document.getElementById('loader-overlay').style.display = 'flex';
             });
         });
     </script>
