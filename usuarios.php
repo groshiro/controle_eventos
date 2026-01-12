@@ -62,7 +62,7 @@ try {
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
         .header { width: 100%; padding: 40px 0; text-align: center; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); border-bottom: 3px solid #e02810; margin-bottom: 30px; }
         .header h2 { margin: 0; font-size: 2.5em; color: #1a1a1a; font-weight: 800; letter-spacing: -1px; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
-        .header h2 span.user-name { color: #e02810; font-weight: 900; text-transform: uppercase; position: relative; display: inline-block; padding: 0 10px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .header h2 span.user-name { color: #000000; font-weight: 900; position: relative; display: inline-block; padding: 0 10px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .header h2 span.user-name:hover { transform: scale(1.1); color: #007bff; text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2); }
         .logout-container { position: absolute; top: 25px; right: 30px; z-index: 1000; }
         .btn-logout { display: inline-block; padding: 10px 22px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; border: 2px solid transparent; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -144,4 +144,5 @@ try {
         });
     </script>
 </body>
+
 </html>
