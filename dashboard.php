@@ -143,6 +143,7 @@ try {
     <nav style="text-align: center; margin-bottom: 20px;">
         <a href="dashboard.php" class="btn-page active">Incidentes</a>
         <a href="usuarios.php" class="btn-page">Gestão de Usuários</a>
+        <a href="auditoria.php" class="btn-page <?php echo (basename($_SERVER['PHP_SELF']) == 'auditoria.php') ? 'active' : ''; ?>">🔍 Auditoria</a>
     </nav>
 
     <div class="cadastro-container">
