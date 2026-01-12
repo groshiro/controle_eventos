@@ -8,19 +8,21 @@ if (!$pdo) {
 }
 
 // ----------------------------------------------------
-// 🛑 PASSO 1: VERIFICAÇÃO DE AUTENTICAÇÃO
+// 🛑 PASSO 1: VERIFICAÇÃO DE AUTENTICAÇÃO E USUÁRIO
 // ----------------------------------------------------
-if (!isset($_SESSION['usuario_id']) || empty($_SESSION['nivel_permissao'])) {
+if (!isset($_SESSION['usuario_logado']) || empty($_SESSION['nivel_permissao'])) {
     header("Location: index.php?erro=sessao_expirada"); 
-    die("Acesso negado."); 
+    exit; 
 }
+
+// Captura o nome de quem está operando o sistema para a Auditoria
+$usuario_ativo = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Sistema';
 
 $acao = $_GET['acao'] ?? $_POST['acao'] ?? ''; 
 $id = $_GET['id'] ?? $_POST['id'] ?? null; 
 
 $nivel_permissao = trim($_SESSION['nivel_permissao']); 
 $PERMISSAO_ADMIN = 'ADMIN'; 
-$PERMISSAO_EDICAO = 'EDITOR'; 
 
 // ----------------------------------------------------
 // 🛑 PASSO 2: VERIFICAÇÃO DE AUTORIZAÇÃO
@@ -52,7 +54,6 @@ try {
     // 🗑️ AÇÃO: EXCLUIR INCIDENTE
     // ----------------------------------------------------
     if ($acao == 'excluir') {
-        // CORREÇÃO: Alterado de 'usuario' para 'controle' para excluir o incidente
         $sql_delete = "DELETE FROM controle WHERE id = :id"; 
         $stmt = $pdo->prepare($sql_delete);
         $stmt->execute(['id' => $id]);
@@ -83,10 +84,9 @@ try {
         exit;
         
     // ----------------------------------------------------
-    // 📝 AÇÃO: ALTERAR INCIDENTE (TABELA CONTROLE)
+    // 📝 AÇÃO: ALTERAR INCIDENTE (COM AUDITORIA)
     // ----------------------------------------------------
     } elseif ($acao == 'alterar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Captura todos os campos vindos do formulário alterar.php
         $incidente = $_POST['incidente'] ?? '';
         $evento    = $_POST['evento'] ?? '';
         $endereco  = $_POST['endereco'] ?? '';
@@ -95,6 +95,7 @@ try {
         $site      = $_POST['site'] ?? '';
         $otdr      = $_POST['otdr'] ?? '';
 
+        // IMPORTANTE: Incluímos 'alterado_por' para registrar quem salvou
         $sql_update = "UPDATE controle SET 
                         incidente = :incidente, 
                         evento = :evento, 
@@ -102,7 +103,8 @@ try {
                         area = :area, 
                         regiao = :regiao, 
                         site = :site, 
-                        otdr = :otdr 
+                        otdr = :otdr,
+                        alterado_por = :usuario_ativo 
                        WHERE id = :id";
 
         $stmt = $pdo->prepare($sql_update);
@@ -114,6 +116,7 @@ try {
             'regiao'    => $regiao,
             'site'      => $site,
             'otdr'      => $otdr,
+            'usuario_ativo' => $usuario_ativo, // Nome vindo da $_SESSION
             'id'        => $id
         ]);
 
@@ -122,7 +125,6 @@ try {
     }
     
 } catch (PDOException $e) {
-    // Captura erros e envia a mensagem para o dashboard
     header("Location: dashboard.php?status=erro&msg=" . urlencode($e->getMessage()));
     exit;
 }
