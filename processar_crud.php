@@ -16,7 +16,7 @@ if (!isset($_SESSION['usuario_logado']) || empty($_SESSION['nivel_permissao'])) 
 }
 
 // Captura o nome de quem está operando o sistema para a Auditoria
-$usuario_ativo = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Sistema';
+$usuario_ativo = $_SESSION['usuario_logado'] ?? 'Sistema';
 
 $acao = $_GET['acao'] ?? $_POST['acao'] ?? ''; 
 $id = $_GET['id'] ?? $_POST['id'] ?? null; 

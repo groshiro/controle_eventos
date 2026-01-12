@@ -2,7 +2,7 @@
 require_once 'conexao.php';
 session_start();
 
-// --- EVITA CACHE DO NAVEGADOR ---
+// --- EVITA CACHE DO NAVEGADOR (Força o carregamento de dados novos) ---
 header("Cache-Control: no-cache, must-revalidate"); 
 header("Pragma: no-cache"); 
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); 
@@ -21,12 +21,13 @@ if ($_SESSION['nivel_permissao'] !== 'ADMIN') {
 }
 
 try {
-    // 3. CONSULTA SQL (Trazendo todos os campos para alinhar com a tabela)
+    // 3. CONSULTA SQL (Filtra apenas registros que possuem alteração)
     $sql = "SELECT id, incidente, evento, endereco, area, regiao, site, otdr, criado_por, alterado_por, data_cadastro 
             FROM controle 
+            WHERE alterado_por IS NOT NULL AND TRIM(alterado_por) <> ''
             ORDER BY id DESC LIMIT 200";
     $stmt = $pdo->query($sql);
-    $logs = $stmt->fetchAll();
+    $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Erro ao extrair logs: " . $e->getMessage());
 }
@@ -53,7 +54,7 @@ try {
         .voltar-container { position: absolute; top: 25px; right: 30px; z-index: 1000; }
         .btn-voltar { display: inline-block; padding: 10px 22px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; text-transform: uppercase; font-size: 13px; }
 
-        /* TABELA RESPONSIVA COM ROLAGEM */
+        /* TABELA RESPONSIVA COM ROLAGEM FIXA */
         .tabela-responsiva { width: 100%; overflow: auto; max-height: 70vh; margin-top: 25px; border: 1px solid #ddd; border-radius: 8px; background: white; }
         table { width: 100%; border-collapse: collapse; min-width: 1600px; }
         
@@ -64,7 +65,7 @@ try {
         .badge-user { background: #34495e; color: #ecf0f1; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
         .badge-update { background: #e67e22; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
         
-        /* SCROLLBAR AZUL */
+        /* ESTILO DA SCROLLBAR */
         .tabela-responsiva::-webkit-scrollbar { height: 12px; }
         .tabela-responsiva::-webkit-scrollbar-thumb { background: #007bff; border-radius: 10px; }
     </style>
@@ -76,7 +77,7 @@ try {
         <a href="dashboard.php" class="btn-voltar">← Dashboard</a>
     </div>
 
-    <h2>Relatório de Auditoria (ADMIN)</h2>
+    <h2>Itens Modificados (Auditoria ADMIN)</h2>
 
     <div class="tabela-responsiva">
         <table>
@@ -107,19 +108,30 @@ try {
                     <td><?php echo htmlspecialchars($log['otdr'] ?? '-'); ?></td>
                     
                     <td>
-                        <span class="badge-user"><?php echo htmlspecialchars($log['criado_por'] ?: 'Sistema'); ?></span>
+                        <?php 
+                            $criador_nome = explode(' ', trim($log['criado_por'] ?: 'Sistema'))[0];
+                        ?>
+                        <span class="badge-user"><?php echo htmlspecialchars($criador_nome); ?></span>
                         <br><small><?php echo date('d/m/Y H:i', strtotime($log['data_cadastro'])); ?></small>
                     </td>
                     
                     <td>
-                        <?php if (!empty(trim($log['alterado_por'] ?? ''))): ?>
-                            <span class="badge-update"><?php echo htmlspecialchars($log['alterado_por']); ?></span>
+                        <?php 
+                        $txt_alterado = trim($log['alterado_por'] ?? '');
+                        if (!empty($txt_alterado)): 
+                            $partes = explode(' ', $txt_alterado);
+                            $exibir = $partes[0]; 
+                        ?>
+                            <span class="badge-update"><?php echo htmlspecialchars($exibir); ?></span>
                         <?php else: ?>
                             <span style="color: #bbb; font-style: italic;">Sem alterações</span>
                         <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
+                <?php if (empty($logs)): ?>
+                    <tr><td colspan="10" style="text-align:center; padding: 30px;">Nenhuma alteração encontrada.</td></tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
