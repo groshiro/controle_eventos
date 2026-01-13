@@ -87,6 +87,7 @@ try {
     // 📝 AÇÃO: ALTERAR INCIDENTE (COM AUDITORIA)
     // ----------------------------------------------------
     } elseif ($acao == 'alterar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Sanitização e Captura das variáveis
         $incidente = $_POST['incidente'] ?? '';
         $evento    = $_POST['evento'] ?? '';
         $endereco  = $_POST['endereco'] ?? '';
@@ -95,29 +96,32 @@ try {
         $site      = $_POST['site'] ?? '';
         $otdr      = $_POST['otdr'] ?? '';
 
-        // IMPORTANTE: Incluímos 'alterado_por' para registrar quem salvou
-        $sql_update = "UPDATE controle SET 
-                        incidente = :incidente, 
-                        evento = :evento, 
-                        endereco = :endereco, 
-                        area = :area, 
-                        regiao = :regiao, 
-                        site = :site, 
-                        otdr = :otdr,
-                        alterado_por = :usuario_ativo 
-                       WHERE id = :id";
+        // SQL CORRIGIDA COM data_alteracao
+        $sql = "UPDATE controle SET 
+                    incidente = :incidente, 
+                    evento = :evento, 
+                    endereco = :endereco, 
+                    area = :area, 
+                    regiao = :regiao, 
+                    site = :site, 
+                    otdr = :otdr,
+                    alterado_por = :usuario,
+                    data_alteracao = NOW() 
+                WHERE id = :id";
 
-        $stmt = $pdo->prepare($sql_update);
+        $stmt = $pdo->prepare($sql);
+        
+        // Execução usando as variáveis capturadas
         $stmt->execute([
-            'incidente' => $incidente,
-            'evento'    => $evento,
-            'endereco'  => $endereco,
-            'area'      => $area,
-            'regiao'    => $regiao,
-            'site'      => $site,
-            'otdr'      => $otdr,
-            'usuario_ativo' => $usuario_ativo, // Nome vindo da $_SESSION
-            'id'        => $id
+            ':incidente' => $incidente,
+            ':evento'    => $evento,
+            ':endereco'  => $endereco,
+            ':area'      => $area,
+            ':regiao'    => $regiao,
+            ':site'      => $site,
+            ':otdr'      => $otdr,
+            ':usuario'   => $usuario_ativo,
+            ':id'        => $id
         ]);
 
         header("Location: dashboard.php?status=alterado");
@@ -125,7 +129,8 @@ try {
     }
     
 } catch (PDOException $e) {
-    header("Location: dashboard.php?status=erro&msg=" . urlencode($e->getMessage()));
+    // Se der erro, redireciona para o dashboard com a mensagem do erro (Ex: Coluna inexistente)
+    header("Location: dashboard.php?status=erro&msg=" . urlencode("Erro no Banco: " . $e->getMessage()));
     exit;
 }
 
