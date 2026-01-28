@@ -8,7 +8,6 @@ Este projeto é uma ferramenta de gestão e monitoramento de incidentes de rede,
 - **Gestão de Incidentes:** CRUD completo (Cadastro, Leitura, Atualização e Exclusão).
 - **Auditoria Dinâmica:** Rastreamento de ações realizadas no sistema.
 - **Controle de Acesso:** Sistema de login com diferentes níveis de permissão (ADMIN/VIEW).
-- **Anexos:** Suporte para upload de evidências e documentos técnicos.
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -16,7 +15,6 @@ Este projeto é uma ferramenta de gestão e monitoramento de incidentes de rede,
 - **Backend:** PHP 8.x (Arquitetura Procedural/Funcional).
 - **Banco de Dados:** PostgreSQL (Relacional).
 - **Integrações:** Google Charts API para estatísticas.
-- **Lógica de Automação:** Scripts de apoio em Python para cálculos de rede.
 
 ## 📋 Pré-requisitos
 
