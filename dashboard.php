@@ -59,7 +59,7 @@ try {
         google.charts.load('current', {'packages':['gauge']});
         google.charts.setOnLoadCallback(() => {
             var data = google.visualization.arrayToDataTable([['Label', 'Value'],['Incidentes', <?php echo $total_incidentes; ?>]]);
-            var options = { width: 400, height: 120, redFrom: 0, redTo: 3000, yellowFrom: 3001, yellowTo: 10000, greenFrom: 10001, greenTo: 25000, max: 31000 };
+            var options = { width: 400, height: 120, redFrom: 0, redTo: 3000, yellowFrom: 3001, yellowTo: 10000, greenFrom: 10001, greenTo: 35000, max: 35000 };
             new google.visualization.Gauge(document.getElementById('chart_div')).draw(data, options);
         });
     </script>
@@ -246,4 +246,5 @@ try {
     </script>
 </body>
 </html>
+
 
