@@ -13,14 +13,27 @@ if (!isset($_SESSION['usuario_logado']) || $_SESSION['nivel_permissao'] !== 'ADM
     exit();
 }
 
+// --- CONFIGURAÇÃO DA PAGINAÇÃO ---
+$itens_por_pagina = 50; 
+$pagina_atual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina_atual < 1) $pagina_atual = 1;
+$offset = ($pagina_atual - 1) * $itens_por_pagina;
+
 try {
-    // 2. CONSULTA SQL HÍBRIDA
-    // Pega inserções dos últimos 5 dias OU qualquer registro que tenha sido alterado
+    // 2. CONTAGEM TOTAL PARA PAGINAÇÃO
+    $sql_count = "SELECT COUNT(*) FROM controle 
+                  WHERE data_cadastro >= CURRENT_DATE - INTERVAL '30 days'
+                     OR (data_alteracao IS NOT NULL)";
+    $total_registros = $pdo->query($sql_count)->fetchColumn();
+    $total_paginas = ceil($total_registros / $itens_por_pagina);
+
+    // 3. CONSULTA SQL OTIMIZADA
     $sql = "SELECT id, incidente, evento, endereco, area, regiao, site, otdr, criado_por, alterado_por, data_cadastro, data_alteracao 
             FROM controle 
-            WHERE data_cadastro >= CURRENT_DATE - INTERVAL '5 days'
-               OR (alterado_por IS NOT NULL AND TRIM(alterado_por) <> '')
-            ORDER BY id DESC LIMIT 300";
+            WHERE data_cadastro >= CURRENT_DATE - INTERVAL '30 days'
+               OR (data_alteracao IS NOT NULL)
+            ORDER BY COALESCE(data_alteracao, data_cadastro) DESC 
+            LIMIT $itens_por_pagina OFFSET $offset";
             
     $stmt = $pdo->query($sql);
     $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -32,49 +45,88 @@ try {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Auditoria | Sistema</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria | Controle Claro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0; }
+        :root {
+            --claro-vermelho: #e02810;
+            --claro-escuro: #1a1a1a;
+            --claro-azul: #007bff;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0; overflow-x: hidden; }
         
-        /* IMAGEM DE FUNDO PADRÃO CLARO */
         body::before { 
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background-image: url('claro-operadora.jpg'); background-size: cover; 
-            opacity: 0.1; z-index: -1; 
+            opacity: 0.05; z-index: -1; 
         }
 
         .container { 
-            max-width: 98%; margin: 20px auto; background: rgba(255,255,255,0.95); 
-            padding: 30px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); 
-            position: relative; backdrop-filter: blur(5px);
+            max-width: 98%; margin: 20px auto; background: rgba(255,255,255,0.92); 
+            padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            position: relative; backdrop-filter: blur(8px);
+            animation: fadeIn 0.6s ease-out;
         }
 
-        h2 { color: #e02810; text-transform: uppercase; text-align: center; border-bottom: 3px solid #e02810; padding-bottom: 15px; font-weight: 800; }
-        
-        .voltar-container { position: absolute; top: 25px; right: 30px; z-index: 1000; }
-        .btn-voltar { display: inline-block; padding: 10px 22px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; text-transform: uppercase; font-size: 13px; }
+        h2 { 
+            color: var(--claro-vermelho); text-transform: uppercase; text-align: center; 
+            border-bottom: 3px solid var(--claro-vermelho); padding-bottom: 15px; 
+            font-weight: 800; letter-spacing: 1px;
+        }
 
-        .tabela-responsiva { width: 100%; overflow: auto; max-height: 70vh; margin-top: 25px; border: 1px solid #ddd; border-radius: 8px; background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 1600px; }
+        .voltar-container { position: absolute; top: 25px; right: 30px; }
+        .btn-voltar { 
+            display: inline-block; padding: 10px 20px; background-color: #6c757d; 
+            color: white; text-decoration: none; border-radius: 8px; 
+            font-weight: bold; transition: 0.3s; font-size: 13px;
+        }
+        .btn-voltar:hover { background-color: #495057; transform: translateX(-5px); }
+
+        .tabela-responsiva { 
+            width: 100%; overflow: auto; max-height: 65vh; margin-top: 25px; 
+            border: 1px solid #ddd; border-radius: 10px; background: white;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 1500px; }
         
-        th { position: sticky; top: 0; background: #007bff; color: white; padding: 12px; text-align: left; text-transform: uppercase; font-size: 0.75em; white-space: nowrap; z-index: 5; }
-        td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 0.85em; color: #333; }
-        
-        .badge-user { background: #34495e; color: #ecf0f1; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
-        .badge-update { background: #e67e22; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
-        
-        .tabela-responsiva::-webkit-scrollbar { height: 12px; }
-        .tabela-responsiva::-webkit-scrollbar-thumb { background: #007bff; border-radius: 10px; }
+        th { 
+            position: sticky; top: 0; background: var(--claro-azul); color: white; 
+            padding: 15px; text-align: left; text-transform: uppercase; 
+            font-size: 11px; z-index: 10; 
+        }
+
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 13px; color: #444; }
+        tr:hover { background-color: #f9f9f9; }
+
+        .badge-user { background: #34495e; color: white; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+        .badge-update { background: #e67e22; color: white; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+
+        /* PAGINAÇÃO */
+        .paginacao { display: flex; justify-content: center; gap: 5px; margin-top: 25px; }
+        .paginacao a, .paginacao span { 
+            padding: 8px 14px; border-radius: 5px; text-decoration: none; 
+            border: 1px solid #ddd; font-weight: bold; font-size: 13px; color: #555;
+        }
+        .paginacao a:hover { background: var(--claro-azul); color: white; border-color: var(--claro-azul); }
+        .paginacao .atual { background: var(--claro-vermelho); color: white; border-color: var(--claro-vermelho); }
+        .paginacao .desativado { color: #ccc; cursor: not-allowed; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .tabela-responsiva::-webkit-scrollbar { height: 10px; width: 8px; }
+        .tabela-responsiva::-webkit-scrollbar-thumb { background: var(--claro-azul); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="voltar-container">
-        <a href="dashboard.php" class="btn-voltar">← Dashboard</a>
+        <a href="dashboard.php" class="btn-voltar">← Voltar Dashboard</a>
     </div>
 
-    <h2>Relatório de Auditoria Recente (ADMIN)</h2>
+    <h2>Auditoria de Incidentes (ADMIN)</h2>
 
     <div class="tabela-responsiva">
         <table>
@@ -88,7 +140,7 @@ try {
                     <th>Região</th>
                     <th>Site</th>
                     <th>OTDR</th>
-                    <th>Criado por / Data</th>
+                    <th>Criação</th>
                     <th>Última Alteração</th>
                 </tr>
             </thead>
@@ -96,51 +148,68 @@ try {
                 <?php if (!empty($logs)): ?>
                     <?php foreach ($logs as $log): ?>
                     <tr>
-                        <td><strong>#<?php echo $log['id']; ?></strong></td>
-                        <td><?php echo htmlspecialchars($log['incidente'] ?? '-'); ?></td>
-                        <td><?php echo htmlspecialchars($log['evento'] ?? '-'); ?></td>
-                        <td><?php echo htmlspecialchars($log['endereco'] ?? '-'); ?></td>
-                        <td><?php echo htmlspecialchars($log['area'] ?? '-'); ?></td>
-                        <td><?php echo htmlspecialchars($log['regiao'] ?? '-'); ?></td>
-                        <td><?php echo htmlspecialchars($log['site'] ?? '-'); ?></td>
-                        <td><?php echo htmlspecialchars($log['otdr'] ?? '-'); ?></td>
+                        <td><strong>#<?= $log['id'] ?></strong></td>
+                        <td><?= htmlspecialchars($log['incidente'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($log['evento'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($log['endereco'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($log['area'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($log['regiao'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($log['site'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($log['otdr'] ?? '-') ?></td>
                         
                         <td>
                             <?php $criador = explode(' ', trim($log['criado_por'] ?: 'Sistema'))[0]; ?>
-                            <span class="badge-user"><?php echo htmlspecialchars($criador); ?></span>
-                            <br><small style="color: #666;"><?php echo date('d/m/Y H:i', strtotime($log['data_cadastro'])); ?></small>
+                            <span class="badge-user"><?= htmlspecialchars($criador) ?></span>
+                            <br><small><?= date('d/m/Y H:i', strtotime($log['data_cadastro'])) ?></small>
                         </td>
                         
                         <td>
                             <?php 
                             $alt = trim($log['alterado_por'] ?? '');
-                            $data_alt = $log['data_alteracao'] ?? null;
-
                             if (!empty($alt)): 
                                 $nome_alt = explode(' ', $alt)[0];
                             ?>
-                                <span class="badge-update"><?php echo htmlspecialchars($nome_alt); ?></span>
+                                <span class="badge-update"><?= htmlspecialchars($nome_alt) ?></span>
                                 <br>
-                                <small style="color: #666;">
-                                    <?php 
-                                        // EXIBE SÓ SE TIVER DATA, SENÃO FICA VAZIO
-                                        if (!empty($data_alt)) {
-                                            echo date('d/m/Y H:i', strtotime($data_alt)); 
-                                        }
-                                    ?>
+                                <small>
+                                    <?= !empty($log['data_alteracao']) ? date('d/m/Y H:i', strtotime($log['data_alteracao'])) : '--' ?>
                                 </small>
                             <?php else: ?>
-                                <span style="color: #bbb; font-style: italic;">Sem alterações</span>
+                                <span style="color: #bbb; font-style: italic;">Inalterado</span>
                             <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="10" style="text-align:center; padding: 50px;">Nenhum registro nos últimos 5 dias.</td></tr>
+                    <tr><td colspan="10" style="text-align:center; padding: 50px;">Nenhum registro encontrado.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
+
+    <?php if ($total_paginas > 1): ?>
+    <div class="paginacao">
+        <?php if ($pagina_atual > 1): ?>
+            <a href="?pagina=1">«</a>
+            <a href="?pagina=<?= $pagina_atual - 1 ?>">Anterior</a>
+        <?php endif; ?>
+
+        <?php 
+        $max_links = 5;
+        $start = max(1, $pagina_atual - 2);
+        $end = min($total_paginas, $start + $max_links - 1);
+        
+        for ($i = $start; $i <= $end; $i++): ?>
+            <a href="?pagina=<?= $i ?>" class="<?= ($i == $pagina_atual) ? 'atual' : '' ?>"><?= $i ?></a>
+        <?php endfor; ?>
+
+        <?php if ($pagina_atual < $total_paginas): ?>
+            <a href="?pagina=<?= $pagina_atual + 1 ?>">Próximo</a>
+            <a href="?pagina=<?= $total_paginas ?>">»</a>
+        <?php endif; ?>
+    </div>
+    <p style="text-align:center; font-size: 11px; color: #888;">Total: <?= $total_registros ?> logs</p>
+    <?php endif; ?>
 </div>
 
 </body>
