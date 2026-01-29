@@ -64,7 +64,6 @@ try {
         });
     </script>
     <style>
-        /* MANTIDO SEU CSS ORIGINAL SEM ALTERAÇÃO */
         #loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.9); z-index: 999999; backdrop-filter: blur(8px); flex-direction: column; justify-content: center; align-items: center; }
         .ampulheta { font-size: 80px; animation: girar 2s linear infinite; }
         @keyframes girar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -246,5 +245,6 @@ try {
     </script>
 </body>
 </html>
+
 
 
