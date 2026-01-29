@@ -95,9 +95,49 @@ try {
         .estatisticas p:hover { box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5); transform: translateY(-3px); border: 1px solid #3498db; cursor: pointer; }
         .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
         .header { width: 100%; padding: 40px 0; text-align: center; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); border-bottom: 3px solid #e02810; margin-bottom: 30px; }
-        .header h2 { margin: 0; font-size: 2.5em; color: #1a1a1a; font-weight: 800; letter-spacing: -1px; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
-        .header h2 span.user-name { color: #e02810; font-weight: 900; text-transform: uppercase; position: relative; display: inline-block; padding: 0 10px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .header h2 span.user-name:hover { transform: scale(1.1); color: #007bff; text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2); }
+        /* Animação Específica para o Nome do Usuário */
+        .header h2 span.user-name { 
+            color: #e02810; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            position: relative; 
+            display: inline-block; 
+            padding: 0 10px; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            
+            /* Revelação com atraso para o nome aparecer depois do texto */
+            opacity: 0;
+            animation: revealName 0.5s ease-out 0.6s forwards;
+        }
+        
+        .header h2 span.user-name:hover { 
+            transform: scale(1.1); 
+            color: #007bff; 
+            text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2); 
+        }
+        
+        /* Definição dos Movimentos */
+        @keyframes surgeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes revealName {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
         .logout-container { position: absolute; top: 25px; right: 30px; z-index: 1000; }
         .btn-logout { display: inline-block; padding: 10px 22px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; border: 2px solid transparent; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-logout:hover { background-color: #0056b3; border-color: #004085; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
@@ -245,6 +285,7 @@ try {
     </script>
 </body>
 </html>
+
 
 
 
