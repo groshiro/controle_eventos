@@ -77,7 +77,7 @@ try {
         
         // Ajustado para SSL na porta 465 (Melhor para ambiente de nuvem)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
-        $mail->Port       = 587; 
+        $mail->Port       = 465; 
         $mail->CharSet    = 'UTF-8';
 
         // Opções de SSL para evitar falhas de handshake no Render
@@ -128,4 +128,5 @@ try {
 // 7. Redirecionamento Final
 header("Location: forgot_password.php?status=sucesso");
 exit;
+
 
