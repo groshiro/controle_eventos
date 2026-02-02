@@ -108,6 +108,7 @@ try {
                         <th>ID</th>
                         <th>Nome</th>
                         <th>Login</th>
+                        <th>Email</th>
                         <th>Nível</th>
                         <th>Ações</th>
                     </tr>
@@ -118,6 +119,7 @@ try {
                         <td><strong>#<?php echo $user['id']; ?></strong></td>
                         <td><?php echo htmlspecialchars($user['nome']); ?></td>
                         <td><?php echo htmlspecialchars($user['login']); ?></td>
+                        <td><?php echo htmlspecialchars($user['email']); ?></td>
                         <td><span style="color:#555;"><?php echo $user['nivel_permissao']; ?></span></td>
                         <td>
                             <a href="alterar_usuario.php?id=<?php echo $user['id']; ?>" class="btn-edit">Editar</a>
@@ -159,4 +161,5 @@ try {
 </script>
 
 </body>
+
 </html>
