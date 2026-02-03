@@ -78,9 +78,41 @@ try {
         td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 0.85em; color: #333; }
         tr:hover { background-color: rgba(0, 123, 255, 0.05); }
 
-        .btn-edit { color: #007bff; text-decoration: none; font-weight: bold; }
-        .btn-delete { color: #e02810; font-weight: bold; cursor: pointer; margin-left: 12px; }
+        /* Container das ações para alinhar os botões */
+        .acoes-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0; /* Esconde por padrão */
+            transition: opacity 0.3s ease;
+        }
 
+        /* Mostra os botões quando passa o mouse na LINHA (tr) */
+        tr:hover .acoes-container {
+            opacity: 1;
+        }
+
+        .btn-edit { 
+            color: #007bff; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-delete { 
+            color: #e02810; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Ícones sutis (opcional, apenas via texto) */
+        .btn-edit::before { content: '✎ '; margin-right: 4px; }
+        .btn-delete::before { content: '🗑 '; margin-right: 4px; }
         /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; }
         .modal-card { background: white; padding: 30px; border-radius: 12px; width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -122,8 +154,10 @@ try {
                         <td><?php echo htmlspecialchars($user['email']); ?></td>
                         <td><span style="color:#555;"><?php echo $user['nivel_permissao']; ?></span></td>
                         <td>
-                            <a href="alterar_usuario.php?id=<?php echo $user['id']; ?>" class="btn-edit">Editar</a>
-                            <span class="btn-delete" onclick="confirmarExclusao('<?php echo $user['id']; ?>', '<?php echo addslashes($user['nome']); ?>')">Excluir</span>
+                            <div class="acoes-container">
+                                <a href="alterar_usuario.php?id=<?php echo $user['id']; ?>" class="btn-edit">Editar</a>
+                                <span class="btn-delete" onclick="confirmarExclusao('<?php echo $user['id']; ?>', '<?php echo addslashes($user['nome']); ?>')">Excluir</span>
+                             </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -161,5 +195,4 @@ try {
 </script>
 
 </body>
-
 </html>
