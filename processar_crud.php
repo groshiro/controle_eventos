@@ -55,7 +55,7 @@ try {
     // ----------------------------------------------------
     // 🗑️ AÇÃO: EXCLUIR (LÓGICA MULTI-TABELA)
     // ----------------------------------------------------
-    if ($acao == 'excluir') {
+    if ($acao == 'excluir' || $acao == 'excluir_usuario') {
         
         if ($tipo == 'usuario') {
             // Evitar que o admin logado exclua a si próprio
