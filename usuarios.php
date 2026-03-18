@@ -185,10 +185,11 @@ try {
 
 <script>
     function confirmarExclusao(id, nome) {
-        document.getElementById('nomeModal').innerText = nome;
-        document.getElementById('linkExcluir').href = "processar_crud.php?acao=excluir_usuario&id=" + id;
-        document.getElementById('modalExcluir').style.display = 'flex';
-    }
+    document.getElementById('nomeModal').innerText = nome;
+    // Alterado de 'excluir_usuario' para 'excluir' + '&tipo=usuario'
+    document.getElementById('linkExcluir').href = "processar_crud.php?acao=excluir&id=" + id + "&tipo=usuario";
+    document.getElementById('modalExcluir').style.display = 'flex';
+}
     function fecharModal() {
         document.getElementById('modalExcluir').style.display = 'none';
     }
