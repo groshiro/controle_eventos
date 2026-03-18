@@ -20,6 +20,8 @@ $usuario_ativo = $_SESSION['usuario_logado'] ?? 'Sistema';
 
 $acao = $_GET['acao'] ?? $_POST['acao'] ?? ''; 
 $id = $_GET['id'] ?? $_POST['id'] ?? null; 
+// Novo parâmetro para saber 'o que' excluir (usuario ou incidente)
+$tipo = $_GET['tipo'] ?? $_POST['tipo'] ?? 'incidente'; 
 
 $nivel_permissao = trim($_SESSION['nivel_permissao']); 
 $PERMISSAO_ADMIN = 'ADMIN'; 
@@ -51,14 +53,27 @@ if (!$id || empty($acao)) {
 
 try {
     // ----------------------------------------------------
-    // 🗑️ AÇÃO: EXCLUIR INCIDENTE
+    // 🗑️ AÇÃO: EXCLUIR (LÓGICA MULTI-TABELA)
     // ----------------------------------------------------
     if ($acao == 'excluir') {
-        $sql_delete = "DELETE FROM controle WHERE id = :id"; 
+        
+        if ($tipo == 'usuario') {
+            // Evitar que o admin logado exclua a si próprio
+            if (isset($_SESSION['id_usuario']) && $id == $_SESSION['id_usuario']) {
+                header("Location: dashboard.php?status=erro&msg=" . urlencode("Você não pode excluir sua própria conta!"));
+                exit;
+            }
+            $sql_delete = "DELETE FROM usuario WHERE id = :id";
+            $status_sucesso = "usuario_excluido";
+        } else {
+            $sql_delete = "DELETE FROM controle WHERE id = :id";
+            $status_sucesso = "excluido";
+        }
+
         $stmt = $pdo->prepare($sql_delete);
         $stmt->execute(['id' => $id]);
 
-        header("Location: dashboard.php?status=excluido"); 
+        header("Location: dashboard.php?status=$status_sucesso"); 
         exit;
 
     // ----------------------------------------------------
@@ -129,7 +144,7 @@ try {
     }
     
 } catch (PDOException $e) {
-    // Se der erro, redireciona para o dashboard com a mensagem do erro (Ex: Coluna inexistente)
+    // Se der erro, redireciona para o dashboard com a mensagem do erro (Ex: Chave Estrangeira ativa)
     header("Location: dashboard.php?status=erro&msg=" . urlencode("Erro no Banco: " . $e->getMessage()));
     exit;
 }
