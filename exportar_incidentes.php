@@ -1,4 +1,3 @@
-PHP
 <?php
 // Arquivo: exportar_incidentes.php
 ob_start(); 
