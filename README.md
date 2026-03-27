@@ -1,5 +1,58 @@
-📡 Sistema de Controle de Incidentes — Claro<p align="center"><img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" /><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" /><img src="https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Render" /><img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JS" /></p>Status do Projeto: 🚀 Em Produção (v2.0)Uma solução robusta para gestão e monitoramento de incidentes de rede, focada em centralizar eventos, áreas afetadas e auditoria com alta performance e usabilidade.🌟 Diferenciais do ProjetoO sistema utiliza uma interface baseada em Glassmorphism (efeito de vidro e desfoque), proporcionando uma experiência visual moderna e limpa, inspirada nas melhores práticas de UI/UX atuais.🚀 Funcionalidades PrincipaisRecursoDescrição📊 DashboardIndicadores rápidos e gráficos dinâmicos via Google Charts.⚡ CRUD CompletoGestão total de incidentes: Cadastro, Leitura, Edição e Exclusão.🔍 AuditoriaRastreamento detalhado de cada ação realizada dentro do sistema.🔐 SegurançaControle de acesso por níveis (ADMIN ou VIEW) com sessões protegidas.🖨️ RelatóriosImpressão otimizada via @media print e exportação CSV/Excel.🛠️ Stack TecnológicaFrontend: HTML5, CSS3 Avançado (Backdrop Filter), JavaScript ES6.Backend: PHP 8.x (Arquitetura funcional e segura).Database: PostgreSQL (Relacional de alta performance).Cloud: Configurado para Render.com com suporte a SSL (Require).☁️ Deploy & Cloud (Render.com)O sistema foi projetado para ser Cloud-Native, incluindo:Auto-Detection: Detecta automaticamente se o ambiente é localhost ou production.SSL Native: Conexões seguras obrigatórias para o banco de dados.Apache Config: Arquivo .htaccess customizado para roteamento inteligente.📋 Pré-requisitosServidor Web (Apache/Nginx)PHP >= 7.4PostgreSQL 12+🔧 Instalação e ConfiguraçãoClonar o projeto:Bashgit clone https://github.com/seu-usuario/controle-claro.git
-Banco de Dados:Importe o esquema SQL no seu PostgreSQL e ajuste o arquivo conexao.php:PHP// Exemplo de configuração rápida
+📡 Sistema de Controle de Incidentes — Claro
+
+Solução robusta para gestão e monitoramento de incidentes de rede, focada em centralizar eventos, áreas afetadas e auditoria.
+
+🌟 Diferenciais
+Interface moderna baseada em Glassmorphism (efeito de transparência e desfoque), unindo estética de ponta a uma experiência de usuário (UX) fluida.
+
+🚀 Funcionalidades
+📊 Dashboard: Indicadores em tempo real e gráficos via Google Charts.
+
+⚡ Gestão Completa: CRUD total de incidentes (Cadastro, Leitura, Edição e Exclusão).
+
+🔍 Auditoria: Rastreamento detalhado de cada ação realizada no sistema.
+
+🔐 Segurança: Níveis de acesso (ADMIN/VIEW) com sessões protegidas.
+
+🖨️ Relatórios: Impressão inteligente (@media print) e exportação em CSV/Excel.
+
+🛠️ Stack Tecnológica
+Frontend: HTML5, CSS3 (Backdrop Filter), JavaScript ES6.
+
+Backend: PHP 8.x (Arquitetura funcional).
+
+Banco de Dados: PostgreSQL.
+
+Cloud: Deploy otimizado para Render.com (SSL Native).
+
+☁️ Cloud & Deploy
+Projetado para ser Cloud-Native, o sistema conta com:
+
+Auto-Detection: Alterna automaticamente entre ambiente localhost e production.
+
+Segurança: Conexões obrigatórias via SSL no servidor de produção.
+
+Roteamento: Configurações de .htaccess para servidores Apache.
+
+📋 Pré-requisitos
+Servidor Apache ou Nginx.
+
+PHP 7.4 ou superior.
+
+PostgreSQL 12+.
+
+🔧 Instalação
+Clonar repositório:
+
+Bash
+git clone https://github.com/seu-usuario/controle-claro.git
+Configurar Banco:
+Importe o esquema SQL e ajuste o conexao.php:
+
+PHP
 define('HOST', 'localhost');
 define('DBNAME', 'controle_claro_new');
-Execução:Mova os arquivos para o diretório raiz do seu servidor (htdocs, www ou /var/www/html) e acesse via http://localhost.<p align="center">Desenvolvido com 💻 e ☕ para a gestão eficiente de redes.</p>
+Executar:
+Mova os arquivos para a pasta raiz do servidor e acesse http://localhost.
+
+<p align="center">Desenvolvido com 💻 e ☕ para gestão eficiente de redes.</p>
