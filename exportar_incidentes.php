@@ -5,7 +5,7 @@ require_once 'conexao.php';
 session_start();
 
 if (!isset($_SESSION['usuario_logado'])) {
-    die("Acesso negado.");
+    die("Acesso negado. Por favor, faça login novamente."); 
 }
 
 try {
