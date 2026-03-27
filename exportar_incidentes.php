@@ -1,6 +1,7 @@
 PHP
 <?php
 // Arquivo: exportar_incidentes.php
+ob_start(); 
 require_once 'conexao.php';
 session_start();
 
