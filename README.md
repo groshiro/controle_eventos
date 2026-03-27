@@ -1,53 +1,5 @@
-📡 Sistema de Controle de Incidentes - Claro
-Este projeto é uma ferramenta robusta de gestão e monitoramento de incidentes de rede, desenvolvida para centralizar informações sobre eventos, áreas afetadas e auditoria de ações, com foco em usabilidade e performance.
-
-🚀 Funcionalidades Principais
-Dashboard Interativo: Visualização de indicadores rápidos e gráficos de medidor (Google Charts).
-
-Gestão de Incidentes: CRUD completo (Cadastro, Leitura, Atualização e Exclusão).
-
-Auditoria Dinâmica: Rastreamento detalhado de todas as ações realizadas no sistema.
-
-Controle de Acesso: Sistema de login seguro com diferentes níveis de permissão (ADMIN/VIEW).
-
-NOVO: Relatórios e Impressão: * Impressão Otimizada: Layout inteligente via CSS @media print que remove elementos de navegação para relatórios limpos.
-
-Exportação CSV: Extração de dados direta para Excel/Planilhas para análise externa.
-
-🛠️ Tecnologias Utilizadas
-Frontend: HTML5, CSS3 (Design moderno com Glassmorphism e Backdrop Filter), JavaScript.
-
-Backend: PHP 8.x com suporte a sessões seguras.
-
-Banco de Dados: PostgreSQL (Configurado para rodar localmente ou em nuvem).
-
-Integrações: Google Charts API para estatísticas em tempo real.
-
-☁️ Deploy (Render.com)
-O sistema está configurado para rodar em ambientes de nuvem como o Render, com suporte automático para:
-
-Conexões seguras via SSL (Require) para o PostgreSQL.
-
-Detecção automática de ambiente (Local vs. Produção) no arquivo de conexão.
-
-Configurações de roteamento via .htaccess para servidores Apache.
-
-📋 Pré-requisitos
-Para rodar o projeto localmente, você precisará de:
-
-Servidor Web (Apache/Nginx).
-
-PHP >= 7.4 instalado.
-
-Banco de dados PostgreSQL configurado.
-
-🔧 Instalação
-Clone o repositório:
-
-Bash
-git clone https://github.com/seu-usuario/controle-claro.git
-Configure o Banco de Dados:
-Importe a estrutura das tabelas no seu PostgreSQL e ajuste as credenciais no arquivo conexao.php.
-
-Suba o Servidor:
-Coloque os arquivos na pasta pública do seu servidor (ex: htdocs ou www) e acesse via navegador.
+📡 Sistema de Controle de Incidentes — Claro<p align="center"><img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" /><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" /><img src="https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Render" /><img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JS" /></p>Status do Projeto: 🚀 Em Produção (v2.0)Uma solução robusta para gestão e monitoramento de incidentes de rede, focada em centralizar eventos, áreas afetadas e auditoria com alta performance e usabilidade.🌟 Diferenciais do ProjetoO sistema utiliza uma interface baseada em Glassmorphism (efeito de vidro e desfoque), proporcionando uma experiência visual moderna e limpa, inspirada nas melhores práticas de UI/UX atuais.🚀 Funcionalidades PrincipaisRecursoDescrição📊 DashboardIndicadores rápidos e gráficos dinâmicos via Google Charts.⚡ CRUD CompletoGestão total de incidentes: Cadastro, Leitura, Edição e Exclusão.🔍 AuditoriaRastreamento detalhado de cada ação realizada dentro do sistema.🔐 SegurançaControle de acesso por níveis (ADMIN ou VIEW) com sessões protegidas.🖨️ RelatóriosImpressão otimizada via @media print e exportação CSV/Excel.🛠️ Stack TecnológicaFrontend: HTML5, CSS3 Avançado (Backdrop Filter), JavaScript ES6.Backend: PHP 8.x (Arquitetura funcional e segura).Database: PostgreSQL (Relacional de alta performance).Cloud: Configurado para Render.com com suporte a SSL (Require).☁️ Deploy & Cloud (Render.com)O sistema foi projetado para ser Cloud-Native, incluindo:Auto-Detection: Detecta automaticamente se o ambiente é localhost ou production.SSL Native: Conexões seguras obrigatórias para o banco de dados.Apache Config: Arquivo .htaccess customizado para roteamento inteligente.📋 Pré-requisitosServidor Web (Apache/Nginx)PHP >= 7.4PostgreSQL 12+🔧 Instalação e ConfiguraçãoClonar o projeto:Bashgit clone https://github.com/seu-usuario/controle-claro.git
+Banco de Dados:Importe o esquema SQL no seu PostgreSQL e ajuste o arquivo conexao.php:PHP// Exemplo de configuração rápida
+define('HOST', 'localhost');
+define('DBNAME', 'controle_claro_new');
+Execução:Mova os arquivos para o diretório raiz do seu servidor (htdocs, www ou /var/www/html) e acesse via http://localhost.<p align="center">Desenvolvido com 💻 e ☕ para a gestão eficiente de redes.</p>
