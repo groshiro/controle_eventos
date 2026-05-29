@@ -183,25 +183,46 @@ try {
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        table,
-        .user-table {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(10px);
-            border-collapse: collapse;
-            margin: 20px auto;
-            width: 95%;
-            max-width: 1100px;
+        /* CONTAINER ISOLANDO O SCROLL VERTICAL */
+        .tabela-container-scroll {
+            overflow-y: auto;
+            overflow-x: auto;
+            max-height: 65vh;
+            position: relative;
             border-radius: 8px;
-            overflow: hidden;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            width: 98%;
+            max-width: 98vw;
         }
 
-        th {
-            background-color: #007bff;
+        /* ESTRUTURA BASE DA TABELA */
+        table,
+        .user-table {
+            border-collapse: collapse;
+            margin: 0;
+            width: 100%;
+            background-color: transparent !important;
+        }
+
+        /* FIXAÇÃO SÓLIDA DO HEAD */
+        .tabela-container-scroll table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #007bff !important;
             color: white;
             padding: 12px 15px;
             text-align: left;
             font-weight: bold;
+        }
+
+        .tabela-container-scroll table thead tr {
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         td {
@@ -251,8 +272,7 @@ try {
         .btn-page:not(.active):not(.disabled):hover {
             background-color: #007bff;
             color: white;
-            transform:
-                translateY(-3px);
+            transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
             border-color: #0056b3;
         }
@@ -362,7 +382,6 @@ try {
             margin-bottom: 30px;
         }
 
-        /* Animação Específica para o Nome do Usuário */
         .header h2 span.user-name {
             color: #e02810;
             font-weight: 900;
@@ -371,8 +390,6 @@ try {
             display: inline-block;
             padding: 0 10px;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-            /* Revelação com atraso para o nome aparecer depois do texto */
             opacity: 0;
             animation: revealName 0.5s ease-out 0.6s forwards;
         }
@@ -383,7 +400,6 @@ try {
             text-shadow: 3px 6px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Definição dos Movimentos */
         @keyframes surgeIn {
             from {
                 opacity: 0;
@@ -452,7 +468,6 @@ try {
 
         @media print {
 
-            /* Esconde elementos desnecessários na impressão */
             nav,
             .logout-container,
             .cadastro-container,
@@ -476,8 +491,6 @@ try {
             body::after {
                 display: none;
             }
-
-            /* Remove as imagens de fundo */
 
             table {
                 width: 100%;
@@ -658,24 +671,9 @@ try {
             background-color: #0056b3;
         }
 
-        .tabela-container-scroll {
-            overflow-x: auto;
-            max-height: 75vh;
-            position: relative;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-        }
-
-        .tabela-container-scroll table thead th {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background-color: #007bff;
-        }
-
         .tabela-container-scroll::-webkit-scrollbar {
             height: 12px;
+            width: 8px;
         }
 
         .tabela-container-scroll::-webkit-scrollbar-thumb {
