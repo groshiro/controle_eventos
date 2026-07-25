@@ -257,7 +257,7 @@ try {
             color: #333;
         }
 
-        /* 🚀 CONTAINER ISOLANDO O SCROLL VERTICAL E HORIZONTAL */
+        /* CONTAINER ISOLANDO O SCROLL VERTICAL E HORIZONTAL */
         .tabela-container-scroll {
             overflow-y: auto;
             overflow-x: auto;
@@ -540,15 +540,11 @@ try {
 
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
-    <!-- BARRAS DE NAVEGAÇÃO NO TOPO (BOTÕES RESTRITOS PARA ADMIN) -->
-    <nav class="menu-superior">
-        <?php $arquivo_no_servidor = basename($_SERVER['PHP_SELF']); ?>
+    <!-- BARRAS DE NAVEGAÇÃO NO TOPO (EXIBIDA APENAS PARA ADMIN) -->
+    <?php if ($nivel_permissao_logado === 'admin'): ?>
+        <nav class="menu-superior">
+            <?php $arquivo_no_servidor = basename($_SERVER['PHP_SELF']); ?>
 
-        <a href="dashboard.php" class="btn-page <?php echo ($arquivo_no_servidor == 'dashboard.php') ? 'active' : ''; ?>">
-            Incidentes
-        </a>
-
-        <?php if ($nivel_permissao_logado === 'admin'): ?>
             <a href="usuarios.php" class="btn-page <?php echo ($arquivo_no_servidor == 'usuarios.php' || $arquivo_no_servidor == 'gerenciar_usuarios.php') ? 'active' : ''; ?>">
                 Gestão de Usuários
             </a>
@@ -556,8 +552,8 @@ try {
             <a href="auditoria.php" class="btn-page <?php echo ($arquivo_no_servidor == 'auditoria.php') ? 'active' : ''; ?>">
                 🔍 Auditoria
             </a>
-        <?php endif; ?>
-    </nav>
+        </nav>
+    <?php endif; ?>
 
     <div class="cadastro-container">
         <a href="cadastro.php" class="btn-cadastrar">
@@ -591,7 +587,7 @@ try {
             </span>
         </div>
 
-        <!-- 🚀 TABELA COM O WRAPPER DE ROLAGEM E CABEÇALHO FIXO RESTAURADO -->
+        <!-- TABELA COM O WRAPPER DE ROLAGEM E CABEÇALHO FIXO -->
         <div class="tabela-container-scroll">
             <table>
                 <thead>
@@ -695,7 +691,7 @@ try {
 
             <!-- Gráfico 2: Incidentes x Área em Barras 3D -->
             <div>
-                <h5 style="color: #333; font-size: 1.2em; margin-bottom: 10px;">Volume de Incidentes por Área</h5>
+                <h5 style="color: #333; font-size: 1.2em; margin-bottom: 10px;">Volume de Incidentes por Área (Barras Tridimensionais)</h5>
                 <div id="chart_area_div" style="width: 100%; height: 420px; margin: 0 auto;"></div>
             </div>
         </div>
