@@ -257,6 +257,50 @@ try {
             color: #333;
         }
 
+        /* 🚀 CONTAINER ISOLANDO O SCROLL VERTICAL E HORIZONTAL */
+        .tabela-container-scroll {
+            overflow-y: auto;
+            overflow-x: auto;
+            max-height: 65vh;
+            position: relative;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            width: 98%;
+            max-width: 98vw;
+        }
+
+        /* FIXAÇÃO SÓLIDA DO CABEÇALHO (THEAD) */
+        .tabela-container-scroll table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #007bff !important;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .tabela-container-scroll table thead tr {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* BARRAS DE ROLAGEM ESTILIZADAS */
+        .tabela-container-scroll::-webkit-scrollbar {
+            height: 12px;
+            width: 8px;
+        }
+
+        .tabela-container-scroll::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 10px;
+        }
+
         /* SIMULAÇÃO 3D NAS BARRAS SVG */
         #chart_area_div svg rect {
             rx: 4px;
@@ -325,15 +369,10 @@ try {
         }
 
         table, .user-table {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(10px);
             border-collapse: collapse;
-            margin: 20px auto;
-            width: 95%;
-            max-width: 1100px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            width: 100%;
+            background-color: transparent !important;
         }
 
         th {
@@ -552,7 +591,8 @@ try {
             </span>
         </div>
 
-        <div style="overflow-x: auto;">
+        <!-- 🚀 TABELA COM O WRAPPER DE ROLAGEM E CABEÇALHO FIXO RESTAURADO -->
+        <div class="tabela-container-scroll">
             <table>
                 <thead>
                     <tr>
@@ -621,7 +661,7 @@ try {
 
             <h4>PAINEL DE ESTATÍSTICAS E GRÁFICOS</h4>
 
-            <!-- 🚀 TOTAL DE USUÁRIOS EXIBIDO EXCLUSIVAMENTE AQUI -->
+            <!-- TOTAL DE USUÁRIOS EXIBIDO EXCLUSIVAMENTE AQUI -->
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; gap: 15px;">
                 <p style="font-size: 1.1em; background-color: #34495e; color: #ecf0f1; padding: 12px 20px; border-radius: 8px; margin: 0;">
                     Total Geral de Incidentes: <strong style="color: #e67e22; font-size: 1.3em;"><?php echo $total_incidentes; ?></strong>
