@@ -511,11 +511,11 @@ try {
 
     <!-- NAVEGAÇÃO DE ABAS -->
     <div class="tabs-container">
-        <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes</button>
+        <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes & Gestão</button>
         <button class="tab-button" onclick="openTab(event, 'tab-graficos')">📊 Gráficos & Métricas</button>
     </div>
 
-    <!-- ABA 1: TABELA E BUSCA -->
+    <!-- ABA 1: TABELA, PÁGINA ATUAL, USUÁRIOS E AUDITORIA -->
     <div id="tab-tabela" class="tab-content" style="display: block;">
         <div class="container-titulo">
             <form id="form-busca" method="GET" action="dashboard.php">
@@ -527,7 +527,7 @@ try {
 
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <!-- CARD DE PÁGINA ATUAL -->
+        <!-- CARD DA QUANTIDADE DE INCIDENTES NA PÁGINA -->
         <div class="card-info-pagina">
             Incidentes exibidos nesta página: 
             <span style="font-size: 1.4em; color: #007bff; font-weight: 900; margin-left: 5px;">
@@ -596,6 +596,53 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
         </div>
+
+        <!-- 🚀 GESTÃO DE USUÁRIOS NA TELA PRINCIPAL -->
+        <div class="admin-header">
+            <h3>Administração de Usuários</h3>
+        </div>
+
+        <?php if (count($lista_usuarios) > 0): ?>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Login</th>
+                        <th>Permissão Atual</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lista_usuarios as $usuario): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($usuario['id'] ?? ''); ?></td>
+                            <td><?php echo htmlspecialchars($usuario['nome'] ?? ''); ?></td>
+                            <td><?php echo htmlspecialchars($usuario['login'] ?? ''); ?></td>
+                            <td><?php echo htmlspecialchars($usuario['nivel_permissao'] ?? ''); ?></td>
+                            <td>
+                                <a href="alterar_usuario.php?id=<?php echo $usuario['id']; ?>">Editar Usuário</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p class="no-user-message" style="text-align: center;">Nenhum usuário encontrado na tabela 'usuario'</p>
+        <?php endif; ?>
+
+        <!-- 🚀 ESTATÍSTICAS/AUDITORIA NO RODAPÉ DA PÁGINA PRINCIPAL -->
+        <footer>
+            <div class="estatisticas">
+                <h3>Estatísticas Rápidas e Auditoria</h3>
+                <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
+                <div style="margin-top: 15px;">
+                    <a href="auditoria.php" class="btn-pesquisar" style="background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%); text-decoration: none;">
+                        🔍 Acessar Relatório de Auditoria
+                    </a>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- ABA 2: GRÁFICOS E ESTATÍSTICAS -->
@@ -624,46 +671,6 @@ try {
             </div>
         </div>
     </div>
-
-    <div class="admin-header">
-        <h3>Administração de Usuários</h3>
-    </div>
-
-    <?php if (count($lista_usuarios) > 0): ?>
-        <table class="user-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Login</th>
-                    <th>Permissão Atual</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lista_usuarios as $usuario): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($usuario['id'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['nome'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['login'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['nivel_permissao'] ?? ''); ?></td>
-                        <td>
-                            <a href="alterar_usuario.php?id=<?php echo $usuario['id']; ?>">Editar Usuário</a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <p class="no-user-message" style="text-align: center;">Nenhum usuário encontrado na tabela 'usuario'</p>
-    <?php endif; ?>
-
-    <footer>
-        <div class="estatisticas">
-            <h3>Estatísticas Rápidas</h3>
-            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
-        </div>
-    </footer>
 
     <!-- Modal de Erro -->
     <div id="modal-erro" class="modal-erro-overlay">
