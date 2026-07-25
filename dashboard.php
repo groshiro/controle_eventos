@@ -395,32 +395,6 @@ try {
 
         .admin-header { margin-top: 50px; text-align: center; }
 
-        footer {
-            width: 100%; border-radius: 5px; border: 1px solid #131212ff;
-            padding: 20px 0; background-color: #b2cae2ff; max-width: 800px;
-            margin: 20px auto; color: #239406ff; border-top: 5px solid #3498db;
-        }
-
-        .estatisticas { display: flex; flex-direction: column; align-items: center; padding: 0 20px; }
-
-        .estatisticas h3, .card-stats h4 {
-            font-size: 1.5em; color: #e20e0eff; margin-bottom: 20px;
-            padding-bottom: 5px; border-bottom: 2px solid #db4d34ff; letter-spacing: 1px;
-        }
-
-        .estatisticas p {
-            font-size: 1.1em; padding: 15px 30px; border: none; border-radius: 8px;
-            background-color: #34495e; color: #ecf0f1; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease-in-out; margin: 10px 20px;
-        }
-
-        .estatisticas p:hover {
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5); transform: translateY(-3px);
-            border: 1px solid #3498db; cursor: pointer;
-        }
-
-        .estatisticas strong { color: #e67e22; font-size: 1.5em; margin-left: 10px; font-weight: bold; }
-
         .header {
             width: 100%; padding: 40px 0; text-align: center;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px);
@@ -647,12 +621,20 @@ try {
 
             <h4>PAINEL DE ESTATÍSTICAS E GRÁFICOS</h4>
 
-            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px;">
-                <p style="font-size: 1.1em;">Total Geral no Sistema: <strong><?php echo $total_incidentes; ?></strong></p>
-                <p style="font-size: 1.1em;">Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            <!-- 🚀 TOTAL DE USUÁRIOS EXIBIDO EXCLUSIVAMENTE AQUI -->
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; gap: 15px;">
+                <p style="font-size: 1.1em; background-color: #34495e; color: #ecf0f1; padding: 12px 20px; border-radius: 8px; margin: 0;">
+                    Total Geral de Incidentes: <strong style="color: #e67e22; font-size: 1.3em;"><?php echo $total_incidentes; ?></strong>
+                </p>
+                <p style="font-size: 1.1em; background-color: #34495e; color: #ecf0f1; padding: 12px 20px; border-radius: 8px; margin: 0;">
+                    Usuários Cadastrados: <strong style="color: #e67e22; font-size: 1.3em;"><?php echo $total_usuarios; ?></strong>
+                </p>
+                <p style="font-size: 1.1em; background-color: #34495e; color: #ecf0f1; padding: 12px 20px; border-radius: 8px; margin: 0;">
+                    Último Cadastro: <strong style="color: #e67e22; font-size: 1.1em;"><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong>
+                </p>
             </div>
 
-            <!-- 🚀 BOTÕES REINSERIDOS: IMPRIMIR E EXTRAIR EXCEL -->
+            <!-- BOTÕES IMPRIMIR E EXTRAIR EXCEL -->
             <div style="text-align: center; margin-bottom: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
                 <button onclick="window.print()" class="btn-pesquisar" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
                     🖨️ Imprimir Relatório
@@ -678,13 +660,6 @@ try {
             </div>
         </div>
     </div>
-
-    <footer>
-        <div class="estatisticas">
-            <h3>Estatísticas Rápidas</h3>
-            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
-        </div>
-    </footer>
 
     <!-- Modal de Erro -->
     <div id="modal-erro" class="modal-erro-overlay">
