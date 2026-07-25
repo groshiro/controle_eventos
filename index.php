@@ -43,7 +43,18 @@ require_once 'conexao.php';
             background-repeat: no-repeat;
             opacity: 0.18;
             z-index: -3;
+            /* Adiciona a animação de Zoom */
+            animation: zoomFundo 15s ease-in-out infinite alternate;
         }
+
+        @keyframes zoomFundo {
+        0% {
+            transform: scale(1);
+        }
+        100% {
+            transform: scale(1.12); /* Expande suavemente a imagem em 12% */
+        }
+    }
 
         /* 3. ANIMAÇÃO DE CORES FLUTUANTES (MESH GRADIENT) */
         .bg-animation {
