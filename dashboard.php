@@ -30,6 +30,9 @@ $pdo->exec("SET NAMES 'UTF8'");
 
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Usuário';
 
+// Recupera a permissão do usuário logado na sessão (padrão 'user' caso não esteja definida)
+$nivel_permissao_logado = strtolower($_SESSION['nivel_permissao'] ?? $_SESSION['permissao'] ?? 'user');
+
 // Configurações da Paginação
 $limite_por_pagina = 300;
 $pagina_atual = $_GET['pagina'] ?? 1;
@@ -192,7 +195,16 @@ try {
             text-align: center;
         }
 
-        /* ESTILOS DE ABAS */
+        /* ESTILOS DE NAVEGAÇÃO E ABAS */
+        nav.menu-superior {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
         .tabs-container {
             display: flex;
             justify-content: center;
@@ -230,7 +242,7 @@ try {
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* DESTAQUE DE INCIDENTES DA PÁGINA ATUAL (ABA 1) */
+        /* DESTAQUE DE INCIDENTES DA PÁGINA ATUAL */
         .card-info-pagina {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
@@ -245,7 +257,7 @@ try {
             color: #333;
         }
 
-        /* SIMULAÇÃO 3D / SOMBRA NAS BARRAS SVG DO GOOGLE CHARTS */
+        /* SIMULAÇÃO 3D NAS BARRAS SVG */
         #chart_area_div svg rect {
             rx: 4px;
             ry: 4px;
@@ -412,7 +424,7 @@ try {
         .header {
             width: 100%; padding: 40px 0; text-align: center;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px);
-            border-bottom: 3px solid #e02810; margin-bottom: 30px;
+            border-bottom: 3px solid #e02810; margin-bottom: 20px;
         }
 
         .header h2 {
@@ -447,6 +459,18 @@ try {
         @media (max-width: 600px) {
             .logout-container { top: 15px; right: 15px; }
             .btn-logout { padding: 8px 15px; font-size: 12px; }
+        }
+
+        @media print {
+            nav, .tabs-container, .logout-container, .cadastro-container, .container-titulo, #form-busca, button, .btn-pesquisar, th:last-child, td:last-child, #chart_div, .header {
+                display: none !important;
+            }
+            body { background: white !important; padding: 0; }
+            body::before, body::after { display: none; }
+            table { width: 100%; border: 1px solid #000; font-size: 10pt; color: black; }
+            th { background-color: #eee !important; color: black !important; border: 1px solid #000; }
+            td { border: 1px solid #000; }
+            #titulo-incidentes { color: black; text-decoration: none; margin-top: 0; }
         }
 
         .cadastro-container { text-align: center; margin: 20px 0 30px 0; }
@@ -503,19 +527,38 @@ try {
 
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
+    <!-- BARRAS DE NAVEGAÇÃO NO TOPO (BOTÕES RESTRITOS PARA ADMIN) -->
+    <nav class="menu-superior">
+        <?php $arquivo_no_servidor = basename($_SERVER['PHP_SELF']); ?>
+
+        <a href="dashboard.php" class="btn-page <?php echo ($arquivo_no_servidor == 'dashboard.php') ? 'active' : ''; ?>">
+            Incidentes
+        </a>
+
+        <?php if ($nivel_permissao_logado === 'admin'): ?>
+            <a href="usuarios.php" class="btn-page <?php echo ($arquivo_no_servidor == 'usuarios.php' || $arquivo_no_servidor == 'gerenciar_usuarios.php') ? 'active' : ''; ?>">
+                Gestão de Usuários
+            </a>
+
+            <a href="auditoria.php" class="btn-page <?php echo ($arquivo_no_servidor == 'auditoria.php') ? 'active' : ''; ?>">
+                🔍 Auditoria
+            </a>
+        <?php endif; ?>
+    </nav>
+
     <div class="cadastro-container">
         <a href="cadastro.php" class="btn-cadastrar">
             Cadastrar Novo Incidente
         </a>
     </div>
 
-    <!-- NAVEGAÇÃO DE ABAS -->
+    <!-- NAVEGAÇÃO DE ABAS INTERNAS -->
     <div class="tabs-container">
-        <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes & Gestão</button>
+        <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes</button>
         <button class="tab-button" onclick="openTab(event, 'tab-graficos')">📊 Gráficos & Métricas</button>
     </div>
 
-    <!-- ABA 1: TABELA, PÁGINA ATUAL, USUÁRIOS E AUDITORIA -->
+    <!-- ABA 1: TABELA E INCIDENTES -->
     <div id="tab-tabela" class="tab-content" style="display: block;">
         <div class="container-titulo">
             <form id="form-busca" method="GET" action="dashboard.php">
@@ -527,7 +570,7 @@ try {
 
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <!-- CARD DA QUANTIDADE DE INCIDENTES NA PÁGINA -->
+        <!-- CARD DE PÁGINA ATUAL -->
         <div class="card-info-pagina">
             Incidentes exibidos nesta página: 
             <span style="font-size: 1.4em; color: #007bff; font-weight: 900; margin-left: 5px;">
@@ -596,53 +639,6 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
         </div>
-
-        <!-- 🚀 GESTÃO DE USUÁRIOS NA TELA PRINCIPAL -->
-        <div class="admin-header">
-            <h3>Administração de Usuários</h3>
-        </div>
-
-        <?php if (count($lista_usuarios) > 0): ?>
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Login</th>
-                        <th>Permissão Atual</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($lista_usuarios as $usuario): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($usuario['id'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($usuario['nome'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($usuario['login'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($usuario['nivel_permissao'] ?? ''); ?></td>
-                            <td>
-                                <a href="alterar_usuario.php?id=<?php echo $usuario['id']; ?>">Editar Usuário</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p class="no-user-message" style="text-align: center;">Nenhum usuário encontrado na tabela 'usuario'</p>
-        <?php endif; ?>
-
-        <!-- 🚀 ESTATÍSTICAS/AUDITORIA NO RODAPÉ DA PÁGINA PRINCIPAL -->
-        <footer>
-            <div class="estatisticas">
-                <h3>Estatísticas Rápidas e Auditoria</h3>
-                <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
-                <div style="margin-top: 15px;">
-                    <a href="auditoria.php" class="btn-pesquisar" style="background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%); text-decoration: none;">
-                        🔍 Acessar Relatório de Auditoria
-                    </a>
-                </div>
-            </div>
-        </footer>
     </div>
 
     <!-- ABA 2: GRÁFICOS E ESTATÍSTICAS -->
@@ -654,6 +650,17 @@ try {
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px;">
                 <p style="font-size: 1.1em;">Total Geral no Sistema: <strong><?php echo $total_incidentes; ?></strong></p>
                 <p style="font-size: 1.1em;">Último Cadastro: <strong><?php echo $ultimo_cadastro ?: 'Nenhum'; ?></strong></p>
+            </div>
+
+            <!-- 🚀 BOTÕES REINSERIDOS: IMPRIMIR E EXTRAIR EXCEL -->
+            <div style="text-align: center; margin-bottom: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                <button onclick="window.print()" class="btn-pesquisar" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
+                    🖨️ Imprimir Relatório
+                </button>
+
+                <a href="exportar_incidentes.php" class="btn-pesquisar" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); text-decoration: none;">
+                    📥 Extrair Excel (CSV)
+                </a>
             </div>
 
             <!-- Gráfico 1: Gauge -->
@@ -671,6 +678,13 @@ try {
             </div>
         </div>
     </div>
+
+    <footer>
+        <div class="estatisticas">
+            <h3>Estatísticas Rápidas</h3>
+            <p>Total de Usuários Cadastrados: <strong><?php echo $total_usuarios; ?></strong></p>
+        </div>
+    </footer>
 
     <!-- Modal de Erro -->
     <div id="modal-erro" class="modal-erro-overlay">
