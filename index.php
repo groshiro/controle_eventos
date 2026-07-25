@@ -65,19 +65,19 @@ require_once 'conexao.php';
             height: 100%;
             z-index: -2;
             background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 123, 255, 0.25) 0%, transparent 45%),
-                radial-gradient(circle at 80% 70%, rgba(220, 53, 69, 0.2) 0%, transparent 45%),
-                radial-gradient(circle at 50% 50%, rgba(0, 123, 255, 0.1) 0%, transparent 60%);
-            filter: blur(70px);
-            animation: moveColors 18s ease-in-out infinite alternate;
+                radial-gradient(circle at 20% 30%, rgba(0, 123, 255, 0.45) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(220, 53, 69, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 183, 255, 0.3) 0%, transparent 60%);
+            /* Desfocado suave + Saturação elevada para dar vivacidade */
+            filter: blur(45px) saturate(160%);
+            animation: moveColors 15s ease-in-out infinite alternate;
         }
-
+        
         @keyframes moveColors {
             0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-6%, 6%) scale(1.12); }
-            100% { transform: translate(6%, -6%) scale(1); }
+            50% { transform: translate(-8%, 8%) scale(1.2); }
+            100% { transform: translate(8%, -8%) scale(1); }
         }
-
         /* 4. CONTAINER GLASSMORPHISM (EFEITO VIDRO REFINADO) */
         .login-container {
             position: relative;
