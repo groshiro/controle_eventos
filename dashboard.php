@@ -695,7 +695,7 @@ try {
 
             <!-- Gráfico 2: Incidentes x Área em Barras 3D -->
             <div>
-                <h5 style="color: #333; font-size: 1.2em; margin-bottom: 10px;">Volume de Incidentes por Área (Barras Tridimensionais)</h5>
+                <h5 style="color: #333; font-size: 1.2em; margin-bottom: 10px;">Volume de Incidentes por Área</h5>
                 <div id="chart_area_div" style="width: 100%; height: 420px; margin: 0 auto;"></div>
             </div>
         </div>
