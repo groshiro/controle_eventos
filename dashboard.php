@@ -103,12 +103,12 @@ try {
                 width: 400,
                 height: 120,
                 redFrom: 0,
-                redTo: 3000,
-                yellowFrom: 3001,
-                yellowTo: 10000,
-                greenFrom: 10001,
-                greenTo: 25000,
-                max: 25000
+                redTo: 5000,
+                yellowFrom: 5001,
+                yellowTo: 15000,
+                greenFrom: 15001,
+                greenTo: 40000,
+                max: 40000
             };
             new google.visualization.Gauge(document.getElementById('chart_div')).draw(dataGauge, optionsGauge);
 
