@@ -642,6 +642,13 @@ try {
         <a href="cadastro.php" class="btn-cadastrar">
             Cadastrar Novo Incidente
         </a>
+        <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
+        <a href="https://drive.google.com/drive/folders/1RXuFS0i8Ek06Bht2gUEjnvBoKUvm0Gzu?usp=sharing" target="_blank" class="btn-documentacao">
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="btn-drive">
+            📁 Consultar Documentos
+        </a>
     </div>
 
     <!-- NAVEGAÇÃO DE ABAS INTERNAS -->
