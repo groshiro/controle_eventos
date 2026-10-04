@@ -658,7 +658,7 @@ try {
     </div>
     <div class="consulta_documentacao-container">
         <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
-        <a href="https://drive.google.com/drive/folders/1RXuFS0i8Ek06Bht2gUEjnvBoKUvm0Gzu?usp=sharing"
+        <a href="https://drive.google.com/embeddedfolderview?id=1RXuFS0i8Ek06Bht2gUEjnvBoKUvm0Gzu#list"
             target="_blank" 
             rel="noopener noreferrer" 
             class="btn-consultar-documentos">
