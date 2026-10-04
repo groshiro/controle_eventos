@@ -656,14 +656,14 @@ try {
             Cadastrar Novo Incidente
         </a>
     </div>
-    <div class="consulta_documentacao-container">
-        <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
-       <a href="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&action=embedview&IsDlg=1"
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="btn-consultar-documentos">
-            📁 Consultar Documentos
-        </a>
+    <div style="width: 100%; max-width: 1100px; margin: 20px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <iframe 
+        src="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&action=embedview&IsDlg=1" 
+        width="100%" 
+        height="650" 
+        frameborder="0" 
+        scrolling="auto">
+    </iframe>
     </div>
 
     <!-- NAVEGAÇÃO DE ABAS INTERNAS -->
