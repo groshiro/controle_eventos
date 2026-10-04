@@ -658,7 +658,7 @@ try {
     </div>
     <div class="consulta_documentacao-container">
         <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
-       <a href="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&env=Embedded"
+       <a href="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&action=embedview&IsDlg=1"
             target="_blank" 
             rel="noopener noreferrer" 
             class="btn-consultar-documentos">
