@@ -687,7 +687,7 @@ try {
     </a>
 
     <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
-    <a href="https://drive.google.com/drive/folders/1RXuFS0i8Ek06Bht2gUEjnvBoKUvm0Gzu?usp=sharing"
+    <a href="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&action=embedview&IsDlg=1"
         target="_blank" 
         rel="noopener noreferrer" 
         class="btn-consultar-documentos">
