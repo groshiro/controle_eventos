@@ -48,13 +48,13 @@ require_once 'conexao.php';
         }
 
         @keyframes zoomFundo {
-        0% {
-            transform: scale(1);
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.12); /* Expande suavemente a imagem em 12% */
+            }
         }
-        100% {
-            transform: scale(1.12); /* Expande suavemente a imagem em 12% */
-        }
-    }
 
         /* 3. ANIMAÇÃO DE CORES FLUTUANTES (MESH GRADIENT) */
         .bg-animation {
@@ -78,6 +78,7 @@ require_once 'conexao.php';
             50% { transform: translate(-8%, 8%) scale(1.2); }
             100% { transform: translate(8%, -8%) scale(1); }
         }
+
         /* 4. CONTAINER GLASSMORPHISM (EFEITO VIDRO REFINADO) */
         .login-container {
             position: relative;
@@ -302,7 +303,7 @@ require_once 'conexao.php';
 
     <div class="login-container">
         <div class="status-conexao">
-            <?php echo $status_conexao; ?>
+            <?php echo $status_conexao ?? ''; ?>
         </div>
         
         <h1>Acessar conta</h1>
@@ -375,8 +376,10 @@ require_once 'conexao.php';
             if (codigoErro === '1') mensagem = "⚠️ Login ou senha incorretos.";
             else if (codigoErro === '2') mensagem = "⚠️ Preencha todos os campos.";
             else if (codigoErro === '3') mensagem = "⚠️ Erro na conexão com o banco.";
+            else if (codigoErro === '4') mensagem = "⏳ Sua conta ainda aguarda aprovação de um administrador.";
+            else if (codigoErro === '5') mensagem = "❌ Sua conta está inativa ou foi bloqueada.";
 
-            if(mensagem) {
+            if (mensagem) {
                 alertaDiv.style.display = 'block';
                 alertaDiv.innerHTML = mensagem;
             }
