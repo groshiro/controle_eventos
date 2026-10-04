@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $senha_hash = password_hash($senha, PASSWORD_DEFAULT); 
             
-            $sql_insert = "INSERT INTO usuario (nome, login, email, senha_hash, nivel_permissao) 
-                           VALUES (:nome_ph, :login_ph, :email_ph, :senha_ph, 'VIEW')";
+            $sql_insert = "INSERT INTO usuario (nome, login, email, senha_hash, nivel_permissao, status) 
+                           VALUES (:nome_ph, :login_ph, :email_ph, :senha_ph, 'VIEW', 'PENDENTE')";
             
             $stmt = $pdo->prepare($sql_insert);
             $stmt->execute([
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'senha_ph' => $senha_hash
             ]);
             
-            $mensagem = "✅ Usuário cadastrado com sucesso! Faça login.";
+            $mensagem = "⏳ Cadastro realizado com sucesso! Aguarde a autorização do administrador para acessar.";
 
         } catch (PDOException $e) {
             if (strpos($e->getMessage(), 'unique constraint') !== false || $e->getCode() == 23505) {
@@ -218,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Criar Conta</h1>
         
         <?php if (!empty($mensagem)): ?>
-            <div class="mensagem" style="color: <?php echo strpos($mensagem, '✅') !== false ? '#155724' : '#721c24'; ?>;">
+            <div class="mensagem" style="color: <?php echo strpos($mensagem, '⏳') !== false || strpos($mensagem, '✅') !== false ? '#155724' : '#721c24'; ?>;">
                 <?php echo $mensagem; ?>
             </div>
         <?php endif; ?>
