@@ -554,6 +554,19 @@ try {
             transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(17, 103, 194, 0.6);
             background: linear-gradient(135deg, #e02810 0%, #b31d0a 100%); color: white;
         }
+         .consulta_documentacao-container { text-align: center; margin: 20px 0 30px 0; }
+
+        .btn-consultar-documentos {
+            display: inline-block; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none;
+            font-weight: 800; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4); transition: all 0.3s ease; border: 2px solid transparent;
+        }
+
+        .btn-consultar-documentos:hover {
+            transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(17, 103, 194, 0.6);
+            background: linear-gradient(135deg, #e02810 0%, #b31d0a 100%); color: white;
+        }
 
         #form-busca { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 25px; }
         #form-busca label { font-weight: 800; color: #333; text-transform: uppercase; font-size: 0.95em; letter-spacing: 0.5px; }
@@ -642,11 +655,13 @@ try {
         <a href="cadastro.php" class="btn-cadastrar">
             Cadastrar Novo Incidente
         </a>
+    </div>
+    <div class="consulta_documentacao-container">
         <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
-        <a href="https://drive.google.com/drive/folders/1RXuFS0i8Ek06Bht2gUEjnvBoKUvm0Gzu?usp=sharing" 
+        <a href="https://drive.google.com/drive/folders/1RXuFS0i8Ek06Bht2gUEjnvBoKUvm0Gzu?usp=sharing"
             target="_blank" 
             rel="noopener noreferrer" 
-            class="btn-drive">
+            class="btn-consultar-documentos">
             📁 Consultar Documentos
         </a>
     </div>
