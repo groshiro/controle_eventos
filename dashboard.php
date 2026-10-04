@@ -33,6 +33,36 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
 // Recupera a permissão do usuário logado na sessão (padrão 'user' caso não esteja definida)
 $nivel_permissao_logado = strtolower($_SESSION['nivel_permissao'] ?? $_SESSION['permissao'] ?? 'user');
 
+// Mensagens das ações de aprovação
+$msg_admin = null;
+$msg_admin_tipo = 'sucesso';
+
+// PROCESSAMENTO DE APROVAÇÃO / REJEIÇÃO DE USUÁRIOS (APENAS ADMIN)
+if ($nivel_permissao_logado === 'admin' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_aprovacao'])) {
+    $id_usuario_alvo = filter_input(INPUT_POST, 'id_usuario', FILTER_VALIDATE_INT);
+    $acao = $_POST['acao_aprovacao'];
+    $novo_nivel = ($_POST['nivel_permissao'] ?? 'VIEW') === 'ADMIN' ? 'ADMIN' : 'VIEW';
+
+    if ($id_usuario_alvo) {
+        try {
+            if ($acao === 'aprovar') {
+                $stmt_aprov = $pdo->prepare("UPDATE usuario SET status = 'ATIVO', nivel_permissao = :nivel WHERE id = :id");
+                $stmt_aprov->execute(['nivel' => $novo_nivel, 'id' => $id_usuario_alvo]);
+                $msg_admin = "✅ Usuário aprovado com sucesso!";
+                $msg_admin_tipo = 'sucesso';
+            } elseif ($acao === 'rejeitar') {
+                $stmt_recusa = $pdo->prepare("DELETE FROM usuario WHERE id = :id AND status = 'PENDENTE'");
+                $stmt_recusa->execute(['id' => $id_usuario_alvo]);
+                $msg_admin = "⚠️ Solicitação rejeitada e removida com sucesso!";
+                $msg_admin_tipo = 'alerta';
+            }
+        } catch (PDOException $e) {
+            $msg_admin = "❌ Erro ao atualizar: " . $e->getMessage();
+            $msg_admin_tipo = 'erro';
+        }
+    }
+}
+
 // Configurações da Paginação
 $limite_por_pagina = 300;
 $pagina_atual = $_GET['pagina'] ?? 1;
@@ -73,6 +103,15 @@ try {
     // Consulta SQL para agrupar Incidentes x Área
     $sql_grafico_area = "SELECT COALESCE(NULLIF(area, ''), 'Não Informado') AS area, COUNT(id) AS total FROM controle GROUP BY area ORDER BY total DESC LIMIT 10";
     $dados_grafico_area = $pdo->query($sql_grafico_area)->fetchAll(PDO::FETCH_ASSOC);
+
+    // Consulta de Usuários Pendentes para Aprovação (apenas se for admin)
+    $lista_pendentes = [];
+    $total_pendentes = 0;
+    if ($nivel_permissao_logado === 'admin') {
+        $stmt_pendentes = $pdo->query("SELECT id, nome, login, email, nivel_permissao FROM usuario WHERE status = 'PENDENTE' ORDER BY id ASC");
+        $lista_pendentes = $stmt_pendentes->fetchAll(PDO::FETCH_ASSOC);
+        $total_pendentes = count($lista_pendentes);
+    }
 
 } catch (PDOException $e) {
     die("Erro ao consultar: " . $e->getMessage());
@@ -158,7 +197,9 @@ try {
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
 
-            drawCharts();
+            if (tabName === 'tab-graficos') {
+                drawCharts();
+            }
         }
     </script>
 
@@ -211,6 +252,7 @@ try {
             gap: 10px;
             margin: 20px auto;
             max-width: 1100px;
+            flex-wrap: wrap;
         }
 
         .tab-button {
@@ -224,6 +266,9 @@ try {
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .tab-button.active {
@@ -240,6 +285,16 @@ try {
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* BADGE INDICADOR DE PENDÊNCIAS */
+        .badge-pendente {
+            background-color: #e02810;
+            color: white;
+            font-size: 0.75em;
+            padding: 2px 7px;
+            border-radius: 12px;
+            font-weight: 900;
         }
 
         /* DESTAQUE DE INCIDENTES DA PÁGINA ATUAL */
@@ -516,6 +571,34 @@ try {
         }
         .btn-pesquisar:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5); background: linear-gradient(135deg, #0056b3 0%, #004085 100%); }
 
+        /* ESTILOS DE BOTÕES DE APROVAÇÃO */
+        .btn-aprovar {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white; border: none; padding: 7px 15px; border-radius: 6px;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-aprovar:hover { transform: scale(1.05); box-shadow: 0 3px 8px rgba(40,167,69,0.3); }
+
+        .btn-rejeitar {
+            background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+            color: white; border: none; padding: 7px 15px; border-radius: 6px;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-rejeitar:hover { transform: scale(1.05); box-shadow: 0 3px 8px rgba(220,53,69,0.3); }
+
+        .select-permissao {
+            padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;
+            font-weight: 600; background: #fff;
+        }
+
+        .alerta-feedback {
+            max-width: 650px; margin: 15px auto; padding: 12px 20px;
+            border-radius: 8px; text-align: center; font-weight: bold;
+        }
+        .alerta-feedback.sucesso { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alerta-feedback.alerta { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .alerta-feedback.erro { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
         .modal-erro-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); overflow: auto; }
         .modal-erro-content { background-color: #fff; margin: 10% auto; padding: 20px; border: 3px solid #dc3545; border-radius: 8px; width: 80%; max-width: 450px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); text-align: center; }
         .modal-erro-titulo { color: #dc3545; font-size: 1.5em; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
@@ -565,6 +648,15 @@ try {
     <div class="tabs-container">
         <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes</button>
         <button class="tab-button" onclick="openTab(event, 'tab-graficos')">📊 Gráficos & Métricas</button>
+        
+        <?php if ($nivel_permissao_logado === 'admin'): ?>
+            <button class="tab-button" onclick="openTab(event, 'tab-aprovacoes')">
+                👥 Aprovações de Usuários
+                <?php if ($total_pendentes > 0): ?>
+                    <span class="badge-pendente"><?php echo $total_pendentes; ?></span>
+                <?php endif; ?>
+            </button>
+        <?php endif; ?>
     </div>
 
     <!-- ABA 1: TABELA E INCIDENTES -->
@@ -696,6 +788,75 @@ try {
             </div>
         </div>
     </div>
+
+    <!-- ABA 3: APROVAÇÕES PENDENTES (VISÍVEL APENAS PARA ADMIN) -->
+    <?php if ($nivel_permissao_logado === 'admin'): ?>
+        <div id="tab-aprovacoes" class="tab-content">
+            <h3 id="titulo-incidentes">Solicitações de Cadastro Pendentes</h3>
+
+            <?php if (!empty($msg_admin)): ?>
+                <div class="alerta-feedback <?php echo $msg_admin_tipo; ?>">
+                    <?php echo htmlspecialchars($msg_admin); ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="card-info-pagina" style="border-left-color: #ffc107;">
+                Usuários aguardando aprovação: 
+                <span style="font-size: 1.4em; color: #e02810; font-weight: 900; margin-left: 5px;">
+                    <?php echo $total_pendentes; ?>
+                </span>
+            </div>
+
+            <?php if ($total_pendentes === 0): ?>
+                <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.8); border-radius: 12px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <span style="font-size: 3em;">🎉</span>
+                    <p style="font-size: 1.1em; color: #555; font-weight: bold; margin-top: 10px;">Não há nenhuma solicitação de cadastro pendente no momento!</p>
+                </div>
+            <?php else: ?>
+                <div class="tabela-container-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome Completo</th>
+                                <th>Login</th>
+                                <th>E-mail</th>
+                                <th>Nível de Acesso</th>
+                                <th style="text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($lista_pendentes as $p): ?>
+                                <tr>
+                                    <td><?php echo $p['id']; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($p['nome']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($p['login']); ?></td>
+                                    <td><?php echo htmlspecialchars($p['email']); ?></td>
+                                    <form method="POST" action="dashboard.php">
+                                        <input type="hidden" name="id_usuario" value="<?php echo (int)$p['id']; ?>">
+                                        <td>
+                                            <select name="nivel_permissao" class="select-permissao">
+                                                <option value="VIEW" <?php echo ($p['nivel_permissao'] === 'VIEW') ? 'selected' : ''; ?>>VIEW</option>
+                                                <option value="ADMIN" <?php echo ($p['nivel_permissao'] === 'ADMIN') ? 'selected' : ''; ?>>ADMIN</option>
+                                            </select>
+                                        </td>
+                                        <td style="text-align: center; white-space: nowrap;">
+                                            <button type="submit" name="acao_aprovacao" value="aprovar" class="btn-aprovar">
+                                                ✓ Aprovar
+                                            </button>
+                                            <button type="submit" name="acao_aprovacao" value="rejeitar" class="btn-rejeitar" onclick="return confirm('Deseja realmente recusar este cadastro?');">
+                                                ✕ Rejeitar
+                                            </button>
+                                        </td>
+                                    </form>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Modal de Erro -->
     <div id="modal-erro" class="modal-erro-overlay">
