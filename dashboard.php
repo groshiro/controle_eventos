@@ -818,7 +818,7 @@ try {
         </div>
         <!-- ATALHO PARA DIVISÃO DE ÁREAS E COORDENADORES -->
         <div style="text-align: center; margin: 15px auto 40px auto;">
-            <a href="divisao_areas.php" class="btn-atalho-areas">
+            <a href="div_areas.php" class="btn-atalho-areas">
                 🗺️ Consultar Divisão por Áreas e Coordenadores
             </a>
         </div>
