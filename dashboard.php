@@ -1,4 +1,5 @@
 <?php
+// Arquivo: dashboard.php
 // 1. INÍCIO ABSOLUTO: Sem espaços ou linhas em branco antes da tag PHP
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -650,6 +651,29 @@ try {
         .modal-erro-close:hover, .modal-erro-close:focus { color: #000; text-decoration: none; cursor: pointer; }
         .btn-fechar-modal { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
         .btn-fechar-modal:hover { background-color: #0056b3; }
+        .btn-atalho-areas {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+                color: white;
+                padding: 12px 28px;
+                border-radius: 50px;
+                text-decoration: none;
+                font-weight: 800;
+                font-size: 0.95em;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 4px 12px rgba(23, 162, 184, 0.35);
+                transition: all 0.3s ease;
+            }
+            
+            .btn-atalho-areas:hover {
+                transform: translateY(-2px) scale(1.02);
+                box-shadow: 0 6px 18px rgba(23, 162, 184, 0.55);
+                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                color: white;
+            }
     </style>
 </head>
 
@@ -792,8 +816,14 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
         </div>
-    </div>
-
+        <!-- ATALHO PARA DIVISÃO DE ÁREAS E COORDENADORES -->
+        <div style="text-align: center; margin: 15px auto 40px auto;">
+            <a href="divisao_areas.php" class="btn-atalho-areas">
+                🗺️ Consultar Divisão por Áreas e Coordenadores
+            </a>
+        </div>
+    </div> <!-- Fim de tab-tabela -->
+    
     <!-- ABA 2: GRÁFICOS E ESTATÍSTICAS -->
     <div id="tab-graficos" class="tab-content">
         <div class="card-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: rgba(255, 255, 255, 0.8); border-radius: 12px; max-width: 900px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
