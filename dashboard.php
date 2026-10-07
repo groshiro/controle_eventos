@@ -101,7 +101,7 @@ try {
     $lista_usuarios = $pdo->query("SELECT id, nome, login, nivel_permissao FROM usuario ORDER BY id ASC")->fetchAll();
 
     // Consulta SQL para agrupar Incidentes x Área
-    $sql_grafico_area = "SELECT COALESCE(NULLIF(area, ''), 'Não Informado') AS area, COUNT(id) AS total FROM controle GROUP BY area ORDER BY total DESC LIMIT 15";
+    $sql_grafico_area = "SELECT COALESCE(NULLIF(area, ''), 'Não Informado') AS area, COUNT(id) AS total FROM controle GROUP BY area ORDER BY total DESC LIMIT 12";
     $dados_grafico_area = $pdo->query($sql_grafico_area)->fetchAll(PDO::FETCH_ASSOC);
 
     // Consulta de Usuários Pendentes para Aprovação (apenas se for admin)
