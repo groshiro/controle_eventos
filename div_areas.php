@@ -231,7 +231,7 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <td class="coord-manha">FLAVIO MARROCO</td>
                         <td class="coord-manha">ROBERTO CRISTIANO</td>
                         <td class="coord-manha">LUCAS</td>
-                        <td class="coord-manha">RICARDO COSTA</td>
+                        <td class="coord-manha">-</td>
                         <td class="coord-manha">FERNANDO FONSECA</td>
                         <td class="coord-manha">MARCIO BERNARDES</td>
                     </tr>
@@ -246,7 +246,7 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <td class="coord-tarde">FERNANDO</td>
                         <td class="coord-tarde">CLEITON</td>
                         <td class="coord-tarde">FERNANDO</td>
-                        <td class="coord-tarde">-</td>
+                        <td class="coord-tarde">RICARDO COSTA</td>
                         <td class="coord-tarde">ROGÉRIO NORIO</td>
                         <td class="coord-tarde">-</td>
                     </tr>
