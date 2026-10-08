@@ -296,7 +296,7 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         </td>
                         <!-- METRO OESTE -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">BRI</span><span class="tag-regiao">CIV</span><span class="tag-regiao">COA</span><span class="tag-regiao">EMB</span><span class="tag-regiao">ICS</span><span class="tag-regiao">ITE</span><span class="tag-regiao">SRE</span><span class="tag-regiao">JAD</span><span class="tag-regiao">OCO</span><span class="tag-regiao">SPB</span><span class="tag-regiao">TBS</span><span class="tag-regiao">VPA</span><span class="tag-regiao">CER</span><span class="tag-regiao">CIR</span><span class="tag-regiao">EGU</span><span class="tag-regiao">FCR</span><span class="tag-regiao">FAT</span><span class="tag-regiao">MAR</span><span class="tag-regiao">MNQ</span><span class="tag-regiao">SRE</span>
+                            <span class="tag-regiao">BRI</span><span class="tag-regiao">CIV</span><span class="tag-regiao">COA</span><span class="tag-regiao">EMB</span><span class="tag-regiao">ICS</span><span class="tag-regiao">ITE</span><span class="tag-regiao">SRE</span><span class="tag-regiao">JAD</span><span class="tag-regiao">OCO</span><span class="tag-regiao">SPB</span><span class="tag-regiao">TBS</span><span class="tag-regiao">VPA</span><span class="tag-regiao">CER</span><span class="tag-regiao">EGU</span><span class="tag-regiao">FCR</span><span class="tag-regiao">FAT</span><span class="tag-regiao">MNQ</span><span class="tag-regiao">SRE</span>
                         </td>
                         <!-- ABCDM -->
                          <td class="celula-regioes">
