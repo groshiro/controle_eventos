@@ -209,7 +209,7 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <th class="th-area">ABCDM</th>
                     </tr>
                     <tr>
-                        <th class="th-periodo" style="background:#34495e;">GERÊNCIA</th>
+                        <th class="th-periodo" style="background:#34495e;">COORDENAÇÃO</th>
                         <th colspan="3" class="coord-geral">RICARDO LOURENÇO</th>
                         <th colspan="3" class="coord-geral">EDUARDO BORGES</th>
                         <th colspan="3" class="coord-geral">ALEXANDRO TÓIA</th>
@@ -252,51 +252,51 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <td style="font-weight: 800; background: #f8f9fa;">REGIÕES ATENDIDAS</td>
                         <!-- NORTE 1 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">API</span><span class="tag-regiao">BVI</span><span class="tag-regiao">BUT</span><span class="tag-regiao">CON</span><span class="tag-regiao">JAG</span><span class="tag-regiao">JRE</span><span class="tag-regiao">JDP</span><span class="tag-regiao">LAP</span><span class="tag-regiao">PRD</span><span class="tag-regiao">PIN</span><span class="tag-regiao">REP</span><span class="tag-regiao">VLE</span>[cite: 5]
+                            <span class="tag-regiao">API</span><span class="tag-regiao">BVI</span><span class="tag-regiao">BUT</span><span class="tag-regiao">CON</span><span class="tag-regiao">JAG</span><span class="tag-regiao">JRE</span><span class="tag-regiao">JDP</span><span class="tag-regiao">LAP</span><span class="tag-regiao">PRD</span><span class="tag-regiao">PIN</span><span class="tag-regiao">REP</span><span class="tag-regiao">VLE</span>
                         </td>
                         <!-- NORTE 2 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">BFU</span><span class="tag-regiao">BRE</span><span class="tag-regiao">BRL</span><span class="tag-regiao">CAC</span><span class="tag-regiao">FRE</span><span class="tag-regiao">JAR</span><span class="tag-regiao">LIM</span><span class="tag-regiao">PRS</span><span class="tag-regiao">PIR</span><span class="tag-regiao">SCE</span><span class="tag-regiao">SDO</span>[cite: 5]
+                            <span class="tag-regiao">BFU</span><span class="tag-regiao">BRE</span><span class="tag-regiao">BRL</span><span class="tag-regiao">CAC</span><span class="tag-regiao">FRE</span><span class="tag-regiao">JAR</span><span class="tag-regiao">LIM</span><span class="tag-regiao">PRS</span><span class="tag-regiao">PIR</span><span class="tag-regiao">SCE</span><span class="tag-regiao">SDO</span>
                         </td>
                         <!-- NORTE 3 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">CVE</span><span class="tag-regiao">JAC</span><span class="tag-regiao">MAN</span><span class="tag-regiao">SNT</span><span class="tag-regiao">TRE</span><span class="tag-regiao">TUC</span><span class="tag-regiao">VMR</span><span class="tag-regiao">VMD</span>[cite: 5]
+                            <span class="tag-regiao">CVE</span><span class="tag-regiao">JAC</span><span class="tag-regiao">MAN</span><span class="tag-regiao">SNT</span><span class="tag-regiao">TRE</span><span class="tag-regiao">TUC</span><span class="tag-regiao">VMR</span><span class="tag-regiao">VMD</span>
                         </td>
                         <!-- SUL 1 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">CMB</span><span class="tag-regiao">CUR</span><span class="tag-regiao">IPI</span><span class="tag-regiao">JDP</span><span class="tag-regiao">LIB</span><span class="tag-regiao">MOE</span><span class="tag-regiao">SAC</span><span class="tag-regiao">SAU</span><span class="tag-regiao">VMN</span>[cite: 5]
+                            <span class="tag-regiao">CMB</span><span class="tag-regiao">CUR</span><span class="tag-regiao">IPI</span><span class="tag-regiao">JDP</span><span class="tag-regiao">LIB</span><span class="tag-regiao">MOE</span><span class="tag-regiao">SAC</span><span class="tag-regiao">SAU</span><span class="tag-regiao">VMN</span>
                         </td>
                         <!-- SUL 2 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">CBE</span><span class="tag-regiao">CGR</span><span class="tag-regiao">CAD</span><span class="tag-regiao">CDU</span><span class="tag-regiao">GRA</span><span class="tag-regiao">IBI</span><span class="tag-regiao">JAB</span><span class="tag-regiao">PDR</span><span class="tag-regiao">SAM</span><span class="tag-regiao">SOC</span>[cite: 5]
+                            <span class="tag-regiao">CBE</span><span class="tag-regiao">CGR</span><span class="tag-regiao">CAD</span><span class="tag-regiao">CDU</span><span class="tag-regiao">GRA</span><span class="tag-regiao">IBI</span><span class="tag-regiao">JAB</span><span class="tag-regiao">PDR</span><span class="tag-regiao">SAM</span><span class="tag-regiao">SOC</span>
                         </td>
                         <!-- SUL 3 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">CLM</span><span class="tag-regiao">CRE</span><span class="tag-regiao">JDS</span><span class="tag-regiao">MOR</span><span class="tag-regiao">RTA</span><span class="tag-regiao">RPE</span><span class="tag-regiao">VAN</span><span class="tag-regiao">VSO</span>[cite: 5]
+                            <span class="tag-regiao">CLM</span><span class="tag-regiao">CRE</span><span class="tag-regiao">JDS</span><span class="tag-regiao">MOR</span><span class="tag-regiao">RTA</span><span class="tag-regiao">RPE</span><span class="tag-regiao">VAN</span><span class="tag-regiao">VSO</span>
                         </td>
                         <!-- LESTE 1 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">ARA</span><span class="tag-regiao">BEL</span><span class="tag-regiao">BRS</span><span class="tag-regiao">MOO</span><span class="tag-regiao">PRI</span><span class="tag-regiao">TAT</span><span class="tag-regiao">VFO</span><span class="tag-regiao">VGL</span><span class="tag-regiao">VPR</span>[cite: 5]
+                            <span class="tag-regiao">ARA</span><span class="tag-regiao">BEL</span><span class="tag-regiao">BRS</span><span class="tag-regiao">MOO</span><span class="tag-regiao">PRI</span><span class="tag-regiao">TAT</span><span class="tag-regiao">VFO</span><span class="tag-regiao">VGL</span><span class="tag-regiao">VPR</span>
                         </td>
                         <!-- LESTE 2 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">ARI</span><span class="tag-regiao">CAR</span><span class="tag-regiao">IGU</span><span class="tag-regiao">PQC</span><span class="tag-regiao">SLU</span><span class="tag-regiao">SMT</span><span class="tag-regiao">SRA</span><span class="tag-regiao">SAP</span><span class="tag-regiao">VMT</span><span class="tag-regiao">GUA</span>[cite: 5]
+                            <span class="tag-regiao">ARI</span><span class="tag-regiao">CAR</span><span class="tag-regiao">IGU</span><span class="tag-regiao">PQC</span><span class="tag-regiao">SLU</span><span class="tag-regiao">SMT</span><span class="tag-regiao">SRA</span><span class="tag-regiao">SAP</span><span class="tag-regiao">VMT</span><span class="tag-regiao">GUA</span>
                         </td>
                         <!-- LESTE 3 -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">AAL</span><span class="tag-regiao">CNG</span><span class="tag-regiao">CLD</span><span class="tag-regiao">ERM</span><span class="tag-regiao">ITQ</span><span class="tag-regiao">JBO</span><span class="tag-regiao">PEN</span><span class="tag-regiao">PRA</span><span class="tag-regiao">SMI</span><span class="tag-regiao">VCR</span><span class="tag-regiao">VIA</span>[cite: 5]
+                            <span class="tag-regiao">AAL</span><span class="tag-regiao">CNG</span><span class="tag-regiao">CLD</span><span class="tag-regiao">ERM</span><span class="tag-regiao">ITQ</span><span class="tag-regiao">JBO</span><span class="tag-regiao">PEN</span><span class="tag-regiao">PRA</span><span class="tag-regiao">SMI</span><span class="tag-regiao">VCR</span><span class="tag-regiao">VIA</span>
                         </td>
                         <!-- METRO LESTE -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">AUJ</span><span class="tag-regiao">GRU</span><span class="tag-regiao">MCZ</span><span class="tag-regiao">SZN</span><span class="tag-regiao">GRM</span><span class="tag-regiao">BIRITIBA MIRIM</span><span class="tag-regiao">SBL</span><span class="tag-regiao">SALESÓPOLIS</span><span class="tag-regiao">POA</span><span class="tag-regiao">FAV</span><span class="tag-regiao">IAQ</span>[cite: 5]
+                            <span class="tag-regiao">AUJ</span><span class="tag-regiao">GRU</span><span class="tag-regiao">MCZ</span><span class="tag-regiao">SZN</span><span class="tag-regiao">GRM</span><span class="tag-regiao">BIRITIBA MIRIM</span><span class="tag-regiao">SBL</span><span class="tag-regiao">SALESÓPOLIS</span><span class="tag-regiao">POA</span><span class="tag-regiao">FAV</span><span class="tag-regiao">IAQ</span>
                         </td>
                         <!-- METRO OESTE -->
                         <td class="celula-regioes">
-                            <span class="tag-regiao">BRI</span><span class="tag-regiao">CIV</span><span class="tag-regiao">COA</span><span class="tag-regiao">EMB</span><span class="tag-regiao">ICS</span><span class="tag-regiao">ITE</span><span class="tag-regiao">SRE</span><span class="tag-regiao">JAD</span><span class="tag-regiao">OCO</span><span class="tag-regiao">SPB</span><span class="tag-regiao">TBS</span><span class="tag-regiao">VPA</span><span class="tag-regiao">CER</span><span class="tag-regiao">CIR</span><span class="tag-regiao">EGU</span><span class="tag-regiao">Franco da Rocha</span><span class="tag-regiao">FRM</span><span class="tag-regiao">Juquitiba</span><span class="tag-regiao">São Lourenço Da Serra</span><span class="tag-regiao">SRE</span>[cite: 5]
+                            <span class="tag-regiao">BRI</span><span class="tag-regiao">CIV</span><span class="tag-regiao">COA</span><span class="tag-regiao">EMB</span><span class="tag-regiao">ICS</span><span class="tag-regiao">ITE</span><span class="tag-regiao">SRE</span><span class="tag-regiao">JAD</span><span class="tag-regiao">OCO</span><span class="tag-regiao">SPB</span><span class="tag-regiao">TBS</span><span class="tag-regiao">VPA</span><span class="tag-regiao">CER</span><span class="tag-regiao">CIR</span><span class="tag-regiao">EGU</span><span class="tag-regiao">Franco da Rocha</span><span class="tag-regiao">FRM</span><span class="tag-regiao">Juquitiba</span><span class="tag-regiao">São Lourenço Da Serra</span><span class="tag-regiao">SRE</span>
                         </td>
                         <!-- ABCDM -->
-                        <td class="celula-regioes">
-                            <span class="tag-regiao">SOB</span><span class="tag-regiao">DDA</span><span class="tag-regiao">SCS</span><span class="tag-regiao">SNE</span><span class="tag-regiao">MAU</span><span class="tag-regiao">RPS</span><span class="tag-regiao">RGS</span>[cite: 5]
+                         <td class="celula-regioes">
+                            <span class="tag-regiao">SOB</span><span class="tag-regiao">DDA</span><span class="tag-regiao">SCS</span><span class="tag-regiao">SNE</span><span class="tag-regiao">MAU</span><span class="tag-regiao">RPS</span><span class="tag-regiao">RGS</span>
                         </td>
                     </tr>
                 </tbody>
