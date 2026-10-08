@@ -4,26 +4,38 @@ require_once 'conexao.php';
 
 $mensagem = "";
 
+// 1. Busca os sites já existentes no banco de dados para a lista pré-definida
+$sites_predefinidos = [];
+if ($pdo) {
+    try {
+        $stmt_sites = $pdo->query("SELECT DISTINCT site FROM controle WHERE site IS NOT NULL AND TRIM(site) != '' AND site != '-' ORDER BY site ASC");
+        $sites_predefinidos = $stmt_sites->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException $e) {
+        // Se falhar a leitura, a lista apenas fica vazia sem travar a tela
+        $sites_predefinidos = [];
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Recebe os dados do formulário
-    $incidente = $_POST['incidente'] ?? '';
-    $evento  = $_POST['evento'] ?? '';
-    $endereco = $_POST['endereco'] ?? '';
-    $area = $_POST['area'] ?? '';
-    $regiao  = $_POST['regiao'] ?? '';
-    $site  = $_POST['site'] ?? '';
-    $otdr  = $_POST['otdr'] ?? '';
+    // 2. Recebe os dados do formulário
+    $incidente = trim($_POST['incidente'] ?? '');
+    $evento    = trim($_POST['evento'] ?? '');
+    $endereco  = trim($_POST['endereco'] ?? '');
+    $area      = trim($_POST['area'] ?? '');
+    $regiao    = trim($_POST['regiao'] ?? '');
+    $site      = trim($_POST['site'] ?? '');
+    $otdr      = trim($_POST['otdr'] ?? '');
 
     // Define a data e hora atual
     $data_cadastro = date('Y-m-d H:i:s'); 
         
     if (!$pdo) {
         $mensagem = "❌ Erro: Falha na conexão com o BD.";
-    } elseif (empty($incidente) || empty($evento) || empty($endereco)|| empty($area)|| empty($regiao)|| empty($site)|| empty($otdr)) {
+    } elseif (empty($incidente) || empty($evento) || empty($endereco) || empty($area) || empty($regiao) || empty($site) || empty($otdr)) {
         $mensagem = "⚠️ Preencha todos os campos.";
     } else {
         try {
-            // 2. INSERÇÃO SEGURA na tabela 'controle'
+            // 3. INSERÇÃO SEGURA na tabela 'controle'
             $sql_insert = "INSERT INTO controle 
                            (incidente, evento, endereco, area, regiao, site, otdr, data_cadastro) 
                            VALUES 
@@ -32,13 +44,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($sql_insert);
 
             $stmt->execute([
-                'incidente_ph' => $incidente,
-                'evento_ph' => $evento,
-                'endereco_ph' => $endereco,
-                'area_ph' => $area,
-                'regiao_ph' => $regiao,
-                'site_ph' => $site,
-                'otdr_ph' => $otdr,
+                'incidente_ph'     => $incidente,
+                'evento_ph'        => $evento,
+                'endereco_ph'      => $endereco,
+                'area_ph'          => $area,
+                'regiao_ph'        => $regiao,
+                'site_ph'          => $site,
+                'otdr_ph'          => $otdr,
                 'data_cadastro_ph' => $data_cadastro
             ]);
             
@@ -59,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Incidente | Sistema</title>
     <style>
-        /* 1. RESET E FUNDO ANIMADO (Padronizado) */
+        /* 1. RESET E FUNDO ANIMADO */
         * {
             margin: 0;
             padding: 0;
@@ -68,13 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         body {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow-x: hidden; /* Permite scroll vertical se o form for grande */
+            overflow-x: hidden;
             background-color: #ffffff;
             position: relative;
+            padding: 20px 0;
         }
 
         /* IMAGEM DE FUNDO FIXA */
@@ -249,7 +262,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="regiao" placeholder="Cidade, Bairro" required>
 
             <label for="site">Site:</label>
-            <input type="text" name="site" placeholder="Nome do site/estação" required>
+            <!-- Campo com datalist para permitir digitação livre OU seleção pré-definida -->
+            <input type="text" name="site" id="site" list="lista-sites" placeholder="Selecione ou digite o site/estação" autocomplete="off" required>
+            <datalist id="lista-sites">
+                <?php foreach ($sites_predefinidos as $item_site): ?>
+                    <option value="<?php echo htmlspecialchars($item_site); ?>">
+                <?php endforeach; ?>
+            </datalist>
 
             <label for="otdr">OTDR:</label>
             <input type="text" name="otdr" placeholder="Medição OTDR" required>
