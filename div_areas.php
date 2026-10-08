@@ -214,7 +214,7 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <th colspan="3" class="coord-geral">EDUARDO BORGES</th>
                         <th colspan="3" class="coord-geral">ALEXANDRO TÓIA</th>
                         <th colspan="3" class="coord-geral">DIEGO IANUZZI</th>
-                        <th class="coord-geral">-</th>
+                        
                     </tr>
                     <tr>
                         <th class="th-periodo" style="background:#495057;">MANHÃ</th>
