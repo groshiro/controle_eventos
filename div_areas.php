@@ -209,6 +209,10 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <th class="th-area">ABCDM</th>
                     </tr>
                     <tr>
+                        <th class="th-periodo" style="background:#34495e;">GERÊNCIA</th>
+                        <th colspan="9" class="coord-geral">EDUARDO AVEIRO</th>                                               
+                    </tr>
+                    <tr>
                         <th class="th-periodo" style="background:#34495e;">COORDENAÇÃO</th>
                         <th colspan="3" class="coord-geral">RICARDO LOURENÇO</th>
                         <th colspan="3" class="coord-geral">EDUARDO BORGES</th>
