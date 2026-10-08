@@ -210,40 +210,40 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                     </tr>
                     <tr>
                         <th class="th-periodo" style="background:#34495e;">GERÊNCIA</th>
-                        <th colspan="3" class="coord-geral">RICARDO LOURENÇO[cite: 5]</th>
-                        <th colspan="3" class="coord-geral">EDUARDO BORGES[cite: 5]</th>
-                        <th colspan="3" class="coord-geral">ALEXANDRO TÓIA[cite: 5]</th>
-                        <th colspan="2" class="coord-geral">DIEGO IANUZZI[cite: 5]</th>
+                        <th colspan="3" class="coord-geral">RICARDO LOURENÇO</th>
+                        <th colspan="3" class="coord-geral">EDUARDO BORGES</th>
+                        <th colspan="3" class="coord-geral">ALEXANDRO TÓIA</th>
+                        <th colspan="2" class="coord-geral">DIEGO IANUZZI</th>
                         <th class="coord-geral">-</th>
                     </tr>
                     <tr>
                         <th class="th-periodo" style="background:#495057;">MANHÃ</th>
-                        <td class="coord-manha">EDUARDO HENRIQUE[cite: 5]</td>
-                        <td class="coord-manha">SANDRO[cite: 5]</td>
-                        <td class="coord-manha">ROBERTO CRISTIANO[cite: 5]</td>
-                        <td class="coord-manha">RICARDO[cite: 5]</td>
-                        <td class="coord-manha">EDUARDO HENRIQUE[cite: 5]</td>
-                        <td class="coord-manha">EDUARDO HENRIQUE[cite: 5]</td>
-                        <td class="coord-manha">FLAVIO[cite: 5]</td>
-                        <td class="coord-manha">ROBERTO CRISTIANO[cite: 5]</td>
-                        <td class="coord-manha">LUCAS[cite: 5]</td>
-                        <td class="coord-manha">RICARDO COSTA[cite: 5]</td>
-                        <td class="coord-manha">FERNANDO FONSECA[cite: 5]</td>
-                        <td class="coord-manha">MARCIO BERNARDES[cite: 5]</td>
+                        <td class="coord-manha">EDUARDO HENRIQUE</td>
+                        <td class="coord-manha">SANDRO</td>
+                        <td class="coord-manha">ROBERTO CRISTIANO</td>
+                        <td class="coord-manha">RICARDO</td>
+                        <td class="coord-manha">EDUARDO HENRIQUE</td>
+                        <td class="coord-manha">EDUARDO HENRIQUE</td>
+                        <td class="coord-manha">FLAVIO MARROCO</td>
+                        <td class="coord-manha">ROBERTO CRISTIANO</td>
+                        <td class="coord-manha">LUCAS</td>
+                        <td class="coord-manha">RICARDO COSTA</td>
+                        <td class="coord-manha">FERNANDO FONSECA</td>
+                        <td class="coord-manha">MARCIO BERNARDES</td>
                     </tr>
                     <tr>
                         <th class="th-periodo" style="background:#6c757d;">TARDE</th>
-                        <td class="coord-tarde">EDGAR[cite: 5]</td>
-                        <td class="coord-tarde">ALESSANDRO[cite: 5]</td>
-                        <td class="coord-tarde">ANTONIONE[cite: 5]</td>
-                        <td class="coord-tarde">BRUNO[cite: 5]</td>
-                        <td class="coord-tarde">WILLIAM[cite: 5]</td>
-                        <td class="coord-tarde">BRUNO[cite: 5]</td>
-                        <td class="coord-tarde">FERNANDO[cite: 5]</td>
-                        <td class="coord-tarde">CLEITON[cite: 5]</td>
-                        <td class="coord-tarde">FERNANDO[cite: 5]</td>
+                        <td class="coord-tarde">EDGAR</td>
+                        <td class="coord-tarde">ALESSANDRO</td>
+                        <td class="coord-tarde">ANTONIONE</td>
+                        <td class="coord-tarde">BRUNO MONTEIRO</td>
+                        <td class="coord-tarde">WILLIAM AZARA</td>
+                        <td class="coord-tarde">BRUNO MONTEIRO</td>
+                        <td class="coord-tarde">FERNANDO</td>
+                        <td class="coord-tarde">CLEITON</td>
+                        <td class="coord-tarde">FERNANDO</td>
                         <td class="coord-tarde">-</td>
-                        <td class="coord-tarde">ROGÉRIO NORIO[cite: 5]</td>
+                        <td class="coord-tarde">ROGÉRIO NORIO</td>
                         <td class="coord-tarde">-</td>
                     </tr>
                 </thead>
