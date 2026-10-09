@@ -9,10 +9,8 @@ require_once 'conexao.php';
     <meta charset="UTF-8">
     <title>Acesso ao Sistema | Histórico de Eventos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Lucide Icons (Ícones modernos e leves) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* 1. RESET E BASE */
         * {
             margin: 0;
             padding: 0;
@@ -30,7 +28,6 @@ require_once 'conexao.php';
             position: relative;
         }
 
-        /* 2. IMAGEM DE FUNDO FIXA */
         .bg-image {
             position: absolute;
             top: 0;
@@ -43,20 +40,14 @@ require_once 'conexao.php';
             background-repeat: no-repeat;
             opacity: 0.18;
             z-index: -3;
-            /* Adiciona a animação de Zoom */
             animation: zoomFundo 15s ease-in-out infinite alternate;
         }
 
         @keyframes zoomFundo {
-            0% {
-                transform: scale(1);
-            }
-            100% {
-                transform: scale(1.12); /* Expande suavemente a imagem em 12% */
-            }
+            0% { transform: scale(1); }
+            100% { transform: scale(1.12); }
         }
 
-        /* 3. ANIMAÇÃO DE CORES FLUTUANTES (MESH GRADIENT) */
         .bg-animation {
             position: absolute;
             top: 0;
@@ -68,7 +59,6 @@ require_once 'conexao.php';
                 radial-gradient(circle at 20% 30%, rgba(0, 123, 255, 0.45) 0%, transparent 50%),
                 radial-gradient(circle at 80% 70%, rgba(220, 53, 69, 0.4) 0%, transparent 50%),
                 radial-gradient(circle at 50% 50%, rgba(0, 183, 255, 0.3) 0%, transparent 60%);
-            /* Desfocado suave + Saturação elevada para dar vivacidade */
             filter: blur(45px) saturate(160%);
             animation: moveColors 15s ease-in-out infinite alternate;
         }
@@ -79,7 +69,6 @@ require_once 'conexao.php';
             100% { transform: translate(8%, -8%) scale(1); }
         }
 
-        /* 4. CONTAINER GLASSMORPHISM (EFEITO VIDRO REFINADO) */
         .login-container {
             position: relative;
             z-index: 1;
@@ -108,7 +97,6 @@ require_once 'conexao.php';
             }
         }
 
-        /* 5. ELEMENTOS DO FORMULÁRIO */
         .status-conexao {
             font-size: 11px;
             color: #64748b;
@@ -169,9 +157,7 @@ require_once 'conexao.php';
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        input::placeholder {
-            color: #94a3b8;
-        }
+        input::placeholder { color: #94a3b8; }
 
         input:focus {
             outline: none;
@@ -185,7 +171,6 @@ require_once 'conexao.php';
             color: #007bff;
         }
 
-        /* Toggle Senha (Olho) */
         .toggle-password {
             position: absolute;
             right: 14px;
@@ -233,11 +218,8 @@ require_once 'conexao.php';
             box-shadow: 0 10px 25px rgba(0, 123, 255, 0.38);
         }
 
-        button[type="submit"]:active {
-            transform: translateY(0);
-        }
+        button[type="submit"]:active { transform: translateY(0); }
 
-        /* 6. LINKS INFERIORES */
         .footer-links {
             display: flex;
             justify-content: space-between;
@@ -273,7 +255,6 @@ require_once 'conexao.php';
             text-decoration: underline;
         }
 
-        /* ALERTA DE ERRO ANIMADO */
         #alerta-erro {
             color: #dc2626;
             background: rgba(254, 226, 226, 0.9);
@@ -286,6 +267,12 @@ require_once 'conexao.php';
             display: none;
             font-weight: 600;
             animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        #alerta-erro.alerta-aviso {
+            color: #92400e;
+            background: rgba(254, 243, 199, 0.95);
+            border: 1px solid rgba(252, 211, 77, 0.8);
         }
 
         @keyframes shake {
@@ -348,10 +335,8 @@ require_once 'conexao.php';
     </div>
 
     <script>
-        // Inicializa os ícones Lucide
         lucide.createIcons();
 
-        // Função para mostrar/ocultar senha
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('pswd');
             const eyeIcon = document.getElementById('eye-icon');
@@ -366,22 +351,34 @@ require_once 'conexao.php';
             lucide.createIcons();
         }
 
-        // Lógica de feedback de erro
         const params = new URLSearchParams(window.location.search);
         if (params.has('erro')) {
             const codigoErro = params.get('erro');
             let mensagem = "";
             const alertaDiv = document.getElementById('alerta-erro');
+            alertaDiv.classList.remove('alerta-aviso');
 
-            if (codigoErro === '1') mensagem = "⚠️ Login ou senha incorretos.";
-            else if (codigoErro === '2') mensagem = "⚠️ Preencha todos os campos.";
-            else if (codigoErro === '3') mensagem = "⚠️ Erro na conexão com o banco.";
-            else if (codigoErro === '4') mensagem = "⏳ Sua conta ainda aguarda aprovação de um administrador.";
-            else if (codigoErro === '5') mensagem = "❌ Sua conta está inativa ou foi bloqueada.";
+            if (codigoErro === '1') {
+                mensagem = "⚠️ Login ou senha incorretos.";
+            } else if (codigoErro === '2') {
+                mensagem = "⚠️ Preencha todos os campos.";
+            } else if (codigoErro === '3') {
+                mensagem = "⚠️ Erro na conexão com o banco.";
+            } else if (codigoErro === '4') {
+                mensagem = "⏳ Sua conta ainda aguarda aprovação de um administrador.";
+                alertaDiv.classList.add('alerta-aviso');
+            } else if (codigoErro === '5') {
+                mensagem = "❌ Sua conta está inativa ou foi bloqueada.";
+            } else if (codigoErro === '6') {
+                mensagem = "⚠️ Atenção: 2ª tentativa incorreta. Mais uma falha e seu acesso será bloqueado!";
+                alertaDiv.classList.add('alerta-aviso');
+            } else if (codigoErro === '7') {
+                mensagem = "🚫 Conta bloqueada por 3 tentativas incorretas. Contate o administrador.";
+            }
 
             if (mensagem) {
                 alertaDiv.style.display = 'block';
-                alertaDiv.innerHTML = mensagem;
+                alertaDiv.innerText = mensagem;
             }
         }
     </script>
