@@ -255,8 +255,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="endereco">Endereço:</label>
             <input type="text" name="endereco" placeholder="Rua, Avenida, Alameda...." required>
 
-            <label for="area">Área:</label>
-            <input type="text" name="area" placeholder="Cluster" required>
+            <label for="area">Área:</label><br>
+                <input type="text" name="area" id="area"
+                       list="lista-areas"
+                       placeholder="Cluster"
+                       autocomplete="off"
+                       required>
+                
+                <datalist id="lista-areas">
+                    <option value="LESTE_1">
+                    <option value="LESTE_2">
+                    <option value="LESTE_3">
+                    <option value="NORTE_1">
+                    <option value="NORTE_2">
+                    <option value="NORTE_3">
+                    <option value="SUL_1">
+                    <option value="SUL_2">
+                    <option value="SUL_3">
+                    <option value="ABCDM">
+                    <option value="METRO_LESTE">
+                    <option value="METRO_OESTE">
+                </datalist>
 
             <label for="regiao">Região:</label>
             <input type="text" name="regiao" placeholder="Cidade, Bairro" required>
