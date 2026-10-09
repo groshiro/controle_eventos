@@ -256,13 +256,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="endereco" placeholder="Rua, Avenida, Alameda...." required>
 
             <label for="area">Área:</label><br>
-                <input type="text" name="area" id="area"
+                <input type="text"
+                       name="area"
+                       id="area"
                        list="lista-areas"
                        placeholder="Cluster"
-                       autocomplete="off"
                        required>
                 
                 <datalist id="lista-areas">
+                    <option value="LESTE_1">
+                    <option value="LESTE_2">
+                    <option value="LESTE_3">
+                    <option value="NORTE_1">
+                    <option value="NORTE_2">
+                    <option value="NORTE_3">
+                    <option value="SUL_1">
+                    <option value="SUL_2">
+                    <option value="SUL_3">
+                    <option value="ABCDM">
+                    <option value="METRO_LESTE">
+                    <option value="METRO_OESTE">
+                </datalist>
+                
+                <script>
+                document.querySelector("form").addEventListener("submit", function(e) {
+                
+                    const permitidos = [
+                        "LESTE_1","LESTE_2","LESTE_3",
+                        "NORTE_1","NORTE_2","NORTE_3",
+                        "SUL_1","SUL_2","SUL_3",
+                        "ABCDM","METRO_LESTE","METRO_OESTE"
+                    ];
+        
+                    const area = document.getElementById("area").value.trim();
+                
+                    if (!permitidos.includes(area)) {
+                        alert("Selecione uma área válida da lista.");
+                        e.preventDefault();
+                    }
+                });
+        </script>
                     <option value="LESTE_1">
                     <option value="LESTE_2">
                     <option value="LESTE_3">
