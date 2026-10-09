@@ -1,11 +1,9 @@
 <?php
 // Arquivo: dashboard.php
-// 1. INÍCIO ABSOLUTO: Sem espaços ou linhas em branco antes da tag PHP
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Verifica login imediatamente
 if (!isset($_SESSION['usuario_logado'])) {
     header("Location: index.php");
     exit();
@@ -26,19 +24,15 @@ if (!isset($pdo) || $pdo === null) {
     die("❌ Erro: Falha na conexão com o banco de dados.");
 }
 
-// Força UTF8 para evitar caracteres estranhos
 $pdo->exec("SET NAMES 'UTF8'");
 
 $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Usuário';
-
-// Recupera a permissão do usuário logado na sessão (padrão 'user' caso não esteja definida)
 $nivel_permissao_logado = strtolower($_SESSION['nivel_permissao'] ?? $_SESSION['permissao'] ?? 'user');
 
-// Mensagens das ações de aprovação
 $msg_admin = null;
 $msg_admin_tipo = 'sucesso';
 
-// PROCESSAMENTO DE APROVAÇÃO / REJEIÇÃO DE USUÁRIOS (APENAS ADMIN)
+// PROCESSAMENTO DE AÇÕES DE ADMINISTRAÇÃO (APROVAR, DESBLOQUEAR OU REJEITAR)
 if ($nivel_permissao_logado === 'admin' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_aprovacao'])) {
     $id_usuario_alvo = filter_input(INPUT_POST, 'id_usuario', FILTER_VALIDATE_INT);
     $acao = $_POST['acao_aprovacao'];
@@ -47,9 +41,14 @@ if ($nivel_permissao_logado === 'admin' && $_SERVER['REQUEST_METHOD'] === 'POST'
     if ($id_usuario_alvo) {
         try {
             if ($acao === 'aprovar') {
-                $stmt_aprov = $pdo->prepare("UPDATE usuario SET status = 'ATIVO', nivel_permissao = :nivel WHERE id = :id");
+                $stmt_aprov = $pdo->prepare("UPDATE usuario SET status = 'ATIVO', nivel_permissao = :nivel, tentativas_login = 0 WHERE id = :id");
                 $stmt_aprov->execute(['nivel' => $novo_nivel, 'id' => $id_usuario_alvo]);
                 $msg_admin = "✅ Usuário aprovado com sucesso!";
+                $msg_admin_tipo = 'sucesso';
+            } elseif ($acao === 'desbloquear') {
+                $stmt_desbloq = $pdo->prepare("UPDATE usuario SET status = 'ATIVO', tentativas_login = 0 WHERE id = :id");
+                $stmt_desbloq->execute(['id' => $id_usuario_alvo]);
+                $msg_admin = "🔓 Usuário desbloqueado com sucesso!";
                 $msg_admin_tipo = 'sucesso';
             } elseif ($acao === 'rejeitar') {
                 $stmt_recusa = $pdo->prepare("DELETE FROM usuario WHERE id = :id AND status = 'PENDENTE'");
@@ -101,17 +100,23 @@ try {
     $total_usuarios = $pdo->query("SELECT COUNT(id) FROM usuario")->fetchColumn();
     $lista_usuarios = $pdo->query("SELECT id, nome, login, nivel_permissao FROM usuario ORDER BY id ASC")->fetchAll();
 
-    // Consulta SQL para agrupar Incidentes x Área
     $sql_grafico_area = "SELECT COALESCE(NULLIF(area, ''), 'Não Informado') AS area, COUNT(id) AS total FROM controle GROUP BY area ORDER BY total DESC LIMIT 12";
     $dados_grafico_area = $pdo->query($sql_grafico_area)->fetchAll(PDO::FETCH_ASSOC);
 
-    // Consulta de Usuários Pendentes para Aprovação (apenas se for admin)
+    // Consulta de Usuários Pendentes e Bloqueados (para o Administrador)
     $lista_pendentes = [];
     $total_pendentes = 0;
+    $lista_bloqueados = [];
+    $total_bloqueados = 0;
+
     if ($nivel_permissao_logado === 'admin') {
         $stmt_pendentes = $pdo->query("SELECT id, nome, login, email, nivel_permissao FROM usuario WHERE status = 'PENDENTE' ORDER BY id ASC");
         $lista_pendentes = $stmt_pendentes->fetchAll(PDO::FETCH_ASSOC);
         $total_pendentes = count($lista_pendentes);
+
+        $stmt_bloqueados = $pdo->query("SELECT id, nome, login, email, tentativas_login FROM usuario WHERE status = 'BLOQUEADO' ORDER BY id ASC");
+        $lista_bloqueados = $stmt_bloqueados->fetchAll(PDO::FETCH_ASSOC);
+        $total_bloqueados = count($lista_bloqueados);
     }
 
 } catch (PDOException $e) {
@@ -134,7 +139,6 @@ try {
         google.charts.setOnLoadCallback(drawCharts);
 
         function drawCharts() {
-            // 1. Gráfico Gauge (Velocímetro)
             var dataGauge = google.visualization.arrayToDataTable([
                 ['Label', 'Value'],
                 ['Incidentes', <?php echo (int)$total_incidentes; ?>]
@@ -152,7 +156,6 @@ try {
             };
             new google.visualization.Gauge(document.getElementById('chart_div')).draw(dataGauge, optionsGauge);
 
-            // 2. Gráfico de Barras com Efeito Tridimensional
             var dataArea = google.visualization.arrayToDataTable([
                 ['Área', 'Quantidade', { role: 'style' }, { role: 'annotation' }],
                 <?php 
@@ -184,7 +187,6 @@ try {
             chartArea.draw(dataArea, optionsArea);
         }
 
-        // Alterna abas e redesenha gráficos
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tab-content");
@@ -205,7 +207,6 @@ try {
     </script>
 
     <style>
-        /* AMPULHETA FIXED */
         #loader-overlay {
             display: none;
             position: fixed;
@@ -237,7 +238,6 @@ try {
             text-align: center;
         }
 
-        /* ESTILOS DE NAVEGAÇÃO E ABAS */
         nav.menu-superior {
             text-align: center;
             margin-bottom: 20px;
@@ -288,7 +288,6 @@ try {
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* BADGE INDICADOR DE PENDÊNCIAS */
         .badge-pendente {
             background-color: #e02810;
             color: white;
@@ -298,7 +297,6 @@ try {
             font-weight: 900;
         }
 
-        /* DESTAQUE DE INCIDENTES DA PÁGINA ATUAL */
         .card-info-pagina {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
@@ -313,7 +311,6 @@ try {
             color: #333;
         }
 
-        /* CONTAINER ISOLANDO O SCROLL VERTICAL E HORIZONTAL */
         .tabela-container-scroll {
             overflow-y: auto;
             overflow-x: auto;
@@ -328,7 +325,6 @@ try {
             max-width: 98vw;
         }
 
-        /* FIXAÇÃO SÓLIDA DO CABEÇALHO (THEAD) */
         .tabela-container-scroll table thead th {
             position: sticky;
             top: 0;
@@ -346,7 +342,6 @@ try {
             z-index: 10;
         }
 
-        /* BARRAS DE ROLAGEM ESTILIZADAS */
         .tabela-container-scroll::-webkit-scrollbar {
             height: 12px;
             width: 8px;
@@ -357,7 +352,6 @@ try {
             border-radius: 10px;
         }
 
-        /* SIMULAÇÃO 3D NAS BARRAS SVG */
         #chart_area_div svg rect {
             rx: 4px;
             ry: 4px;
@@ -531,7 +525,7 @@ try {
         }
 
         @media print {
-            nav, .tabs-container, .logout-container, .cadastro-container, .container-titulo, #form-busca, button, .btn-pesquisar, th:last-child, td:last-child, #chart_div, .header {
+            nav, .tabs-container, .logout-container, .container-titulo, #form-busca, button, .btn-pesquisar, th:last-child, td:last-child, #chart_div, .header, .botoes-topo-container {
                 display: none !important;
             }
             body { background: white !important; padding: 0; }
@@ -552,7 +546,6 @@ try {
             flex-wrap: wrap;
         }
 
-        /* BOTÃO CADASTRAR */
         .btn-cadastrar {
             display: inline-block;
             background: linear-gradient(135deg, #1167c2 0%, #004a99 100%);
@@ -576,7 +569,6 @@ try {
             color: white;
         }
 
-        /* BOTÃO CONSULTAR DOCUMENTOS */
         .btn-consultar-documentos {
             display: inline-block;
             background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
@@ -599,6 +591,7 @@ try {
             background: linear-gradient(135deg, #e02810 0%, #b31d0a 100%);
             color: white;
         }
+
         #form-busca { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 25px; }
         #form-busca label { font-weight: 800; color: #333; text-transform: uppercase; font-size: 0.95em; letter-spacing: 0.5px; }
         #form-busca input[type="text"] {
@@ -615,13 +608,19 @@ try {
         }
         .btn-pesquisar:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5); background: linear-gradient(135deg, #0056b3 0%, #004085 100%); }
 
-        /* ESTILOS DE BOTÕES DE APROVAÇÃO */
         .btn-aprovar {
             background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
             color: white; border: none; padding: 7px 15px; border-radius: 6px;
             font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         .btn-aprovar:hover { transform: scale(1.05); box-shadow: 0 3px 8px rgba(40,167,69,0.3); }
+
+        .btn-desbloquear {
+            background: linear-gradient(135deg, #fd7e14 0%, #d96203 100%);
+            color: white; border: none; padding: 7px 15px; border-radius: 6px;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-desbloquear:hover { transform: scale(1.05); box-shadow: 0 3px 8px rgba(253,126,20,0.3); }
 
         .btn-rejeitar {
             background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
@@ -651,29 +650,30 @@ try {
         .modal-erro-close:hover, .modal-erro-close:focus { color: #000; text-decoration: none; cursor: pointer; }
         .btn-fechar-modal { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
         .btn-fechar-modal:hover { background-color: #0056b3; }
+
         .btn-atalho-areas {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
-                color: white;
-                padding: 12px 28px;
-                border-radius: 50px;
-                text-decoration: none;
-                font-weight: 800;
-                font-size: 0.95em;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                box-shadow: 0 4px 12px rgba(23, 162, 184, 0.35);
-                transition: all 0.3s ease;
-            }
-            
-            .btn-atalho-areas:hover {
-                transform: translateY(-2px) scale(1.02);
-                box-shadow: 0 6px 18px rgba(23, 162, 184, 0.55);
-                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-                color: white;
-            }
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.35);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-atalho-areas:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 18px rgba(23, 162, 184, 0.55);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
     </style>
 </head>
 
@@ -690,7 +690,6 @@ try {
 
     <div class="logout-container"><a href="logout.php" class="btn-logout">Sair</a></div>
 
-    <!-- BARRAS DE NAVEGAÇÃO NO TOPO (EXIBIDA APENAS PARA ADMIN) -->
     <?php if ($nivel_permissao_logado === 'admin'): ?>
         <nav class="menu-superior">
             <?php $arquivo_no_servidor = basename($_SERVER['PHP_SELF']); ?>
@@ -706,29 +705,27 @@ try {
     <?php endif; ?>
 
     <div class="botoes-topo-container">
-    <a href="cadastro.php" class="btn-cadastrar">
-        Cadastrar Novo Incidente
-    </a>
+        <a href="cadastro.php" class="btn-cadastrar">
+            Cadastrar Novo Incidente
+        </a>
 
-    <!-- BOTÃO COM ACESSO RESTRITO À PASTA ESPECÍFICA -->
-    <a href="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&action=embedview&IsDlg=1"
-        target="_blank" 
-        rel="noopener noreferrer" 
-        class="btn-consultar-documentos">
-        📁 Consultar Documentos
-    </a>
+        <a href="https://corpclarobr-my.sharepoint.com/:f:/g/personal/gilson_oshiro_claro_com_br/IgAYbg7sCZMVR4mJiaioZn9hAfua4fyCa_VPfQ-pM9CHiX0?e=c5bxWB&action=embedview&IsDlg=1"
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="btn-consultar-documentos">
+            📁 Consultar Documentos
+        </a>
     </div>
 
-    <!-- NAVEGAÇÃO DE ABAS INTERNAS -->
     <div class="tabs-container">
         <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes</button>
         <button class="tab-button" onclick="openTab(event, 'tab-graficos')">📊 Gráficos & Métricas</button>
         
         <?php if ($nivel_permissao_logado === 'admin'): ?>
             <button class="tab-button" onclick="openTab(event, 'tab-aprovacoes')">
-                👥 Aprovações de Usuários
-                <?php if ($total_pendentes > 0): ?>
-                    <span class="badge-pendente"><?php echo $total_pendentes; ?></span>
+                👥 Gestão de Acessos
+                <?php if (($total_pendentes + $total_bloqueados) > 0): ?>
+                    <span class="badge-pendente"><?php echo ($total_pendentes + $total_bloqueados); ?></span>
                 <?php endif; ?>
             </button>
         <?php endif; ?>
@@ -746,7 +743,6 @@ try {
 
         <h3 id="titulo-incidentes">Incidentes Cadastrados</h3>
 
-        <!-- CARD DE PÁGINA ATUAL -->
         <div class="card-info-pagina">
             Incidentes exibidos nesta página: 
             <span style="font-size: 1.4em; color: #007bff; font-weight: 900; margin-left: 5px;">
@@ -754,7 +750,6 @@ try {
             </span>
         </div>
 
-        <!-- TABELA COM O WRAPPER DE ROLAGEM E CABEÇALHO FIXO -->
         <div class="tabela-container-scroll">
             <table>
                 <thead>
@@ -816,13 +811,13 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
         </div>
-        <!-- ATALHO PARA DIVISÃO DE ÁREAS E COORDENADORES -->
+
         <div style="text-align: center; margin: 15px auto 40px auto;">
             <a href="div_areas.php" class="btn-atalho-areas">
                 🗺️ Consultar Divisão por Áreas e Coordenadores
             </a>
         </div>
-    </div> <!-- Fim de tab-tabela -->
+    </div>
     
     <!-- ABA 2: GRÁFICOS E ESTATÍSTICAS -->
     <div id="tab-graficos" class="tab-content">
@@ -830,7 +825,6 @@ try {
 
             <h4>PAINEL DE ESTATÍSTICAS E GRÁFICOS</h4>
 
-            <!-- TOTAL DE USUÁRIOS EXIBIDO EXCLUSIVAMENTE AQUI -->
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; gap: 15px;">
                 <p style="font-size: 1.1em; background-color: #34495e; color: #ecf0f1; padding: 12px 20px; border-radius: 8px; margin: 0;">
                     Total Geral de Incidentes: <strong style="color: #e67e22; font-size: 1.3em;"><?php echo $total_incidentes; ?></strong>
@@ -843,7 +837,6 @@ try {
                 </p>
             </div>
 
-            <!-- BOTÕES IMPRIMIR E EXTRAIR EXCEL -->
             <div style="text-align: center; margin-bottom: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
                 <button onclick="window.print()" class="btn-pesquisar" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
                     🖨️ Imprimir Relatório
@@ -854,7 +847,6 @@ try {
                 </a>
             </div>
 
-            <!-- Gráfico 1: Gauge -->
             <div style="margin-bottom: 30px;">
                 <h5 style="color: #333; font-size: 1.1em;">Volume Total de Incidentes</h5>
                 <div id="chart_div" style="width: 400px; height: 120px; margin: 10px auto;"></div>
@@ -862,7 +854,6 @@ try {
 
             <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
 
-            <!-- Gráfico 2: Incidentes x Área em Barras 3D -->
             <div>
                 <h5 style="color: #333; font-size: 1.2em; margin-bottom: 10px;">Volume de Incidentes por Área</h5>
                 <div id="chart_area_div" style="width: 100%; height: 420px; margin: 0 auto;"></div>
@@ -870,10 +861,10 @@ try {
         </div>
     </div>
 
-    <!-- ABA 3: APROVAÇÕES PENDENTES (VISÍVEL APENAS PARA ADMIN) -->
+    <!-- ABA 3: APROVAÇÕES E CONTAS BLOQUEADAS -->
     <?php if ($nivel_permissao_logado === 'admin'): ?>
         <div id="tab-aprovacoes" class="tab-content">
-            <h3 id="titulo-incidentes">Solicitações de Cadastro Pendentes</h3>
+            <h3 id="titulo-incidentes">Aprovações e Desbloqueio de Usuários</h3>
 
             <?php if (!empty($msg_admin)): ?>
                 <div class="alerta-feedback <?php echo $msg_admin_tipo; ?>">
@@ -881,20 +872,18 @@ try {
                 </div>
             <?php endif; ?>
 
-            <div class="card-info-pagina" style="border-left-color: #ffc107;">
-                Usuários aguardando aprovação: 
+            <!-- BLOCO 1: CADASTROS PENDENTES -->
+            <div class="card-info-pagina" style="border-left-color: #ffc107; margin-bottom: 10px;">
+                Aguardando aprovação inicial: 
                 <span style="font-size: 1.4em; color: #e02810; font-weight: 900; margin-left: 5px;">
                     <?php echo $total_pendentes; ?>
                 </span>
             </div>
 
             <?php if ($total_pendentes === 0): ?>
-                <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.8); border-radius: 12px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                    <span style="font-size: 3em;">🎉</span>
-                    <p style="font-size: 1.1em; color: #555; font-weight: bold; margin-top: 10px;">Não há nenhuma solicitação de cadastro pendente no momento!</p>
-                </div>
+                <p style="text-align: center; color: #666; font-weight: 600; margin-bottom: 30px;">Sem solicitações de cadastro pendentes.</p>
             <?php else: ?>
-                <div class="tabela-container-scroll">
+                <div class="tabela-container-scroll" style="margin-bottom: 40px;">
                     <table>
                         <thead>
                             <tr>
@@ -936,6 +925,53 @@ try {
                     </table>
                 </div>
             <?php endif; ?>
+
+            <!-- BLOCO 2: CONTAS BLOQUEADAS POR TENTATIVAS -->
+            <div class="card-info-pagina" style="border-left-color: #dc3545; margin-bottom: 10px;">
+                Contas bloqueadas por tentativas: 
+                <span style="font-size: 1.4em; color: #dc3545; font-weight: 900; margin-left: 5px;">
+                    <?php echo $total_bloqueados; ?>
+                </span>
+            </div>
+
+            <?php if ($total_bloqueados === 0): ?>
+                <p style="text-align: center; color: #666; font-weight: 600;">Nenhuma conta bloqueada por excesso de tentativas no momento.</p>
+            <?php else: ?>
+                <div class="tabela-container-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome Completo</th>
+                                <th>Login</th>
+                                <th>E-mail</th>
+                                <th>Erros Registrados</th>
+                                <th style="text-align: center;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($lista_bloqueados as $b): ?>
+                                <tr>
+                                    <td><?php echo $b['id']; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($b['nome']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($b['login']); ?></td>
+                                    <td><?php echo htmlspecialchars($b['email']); ?></td>
+                                    <td><span style="color: #dc3545; font-weight: bold;"><?php echo (int)$b['tentativas_login']; ?> tentativas incorretas</span></td>
+                                    <form method="POST" action="dashboard.php">
+                                        <input type="hidden" name="id_usuario" value="<?php echo (int)$b['id']; ?>">
+                                        <td style="text-align: center; white-space: nowrap;">
+                                            <button type="submit" name="acao_aprovacao" value="desbloquear" class="btn-desbloquear" onclick="return confirm('Deseja desbloquear esta conta e zerar as tentativas?');">
+                                                🔓 Desbloquear Acesso
+                                            </button>
+                                        </td>
+                                    </form>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+
         </div>
     <?php endif; ?>
 
