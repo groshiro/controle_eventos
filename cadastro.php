@@ -295,20 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         e.preventDefault();
                     }
                 });
-        </script>
-                    <option value="LESTE_1">
-                    <option value="LESTE_2">
-                    <option value="LESTE_3">
-                    <option value="NORTE_1">
-                    <option value="NORTE_2">
-                    <option value="NORTE_3">
-                    <option value="SUL_1">
-                    <option value="SUL_2">
-                    <option value="SUL_3">
-                    <option value="ABCDM">
-                    <option value="METRO_LESTE">
-                    <option value="METRO_OESTE">
-                </datalist>
+                </script>
+                    
 
             <label for="regiao">Região:</label>
             <input type="text" name="regiao" placeholder="Cidade, Bairro" required>
