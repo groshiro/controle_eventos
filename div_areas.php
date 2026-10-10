@@ -199,10 +199,10 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                     </tr>
                     <tr>
                         <th class="th-periodo" style="background:#34495e;">COORDENAÇÃO</th>
-                        <th colspan="3" class="coord-geral">RICARDO LOURENÇO</th>
-                        <th colspan="3" class="coord-geral">EDUARDO BORGES</th>
-                        <th colspan="3" class="coord-geral">ALEXANDRO TÓIA</th>
-                        <th colspan="3" class="coord-geral">DIEGO IANUZZI</th>
+                        <th colspan="3" class="coord-geral">RICARDO LOURENÇO (11 99369-6352)</th>
+                        <th colspan="3" class="coord-geral">EDUARDO BORGES (11 97648-2915)</th>
+                        <th colspan="3" class="coord-geral">ALEXANDRO TÓIA (11 99302-3576)</th>
+                        <th colspan="3" class="coord-geral">DIEGO IANUZZI (11 98843-1310)</th>
                         
                     </tr>
                     <tr>
