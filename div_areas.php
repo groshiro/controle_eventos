@@ -221,33 +221,33 @@ $nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 
                         <th class="th-area">ABCDM</th>
                     </tr>
                     <tr>
-                        <th class="th-periodo" style="background:#495057;">MANHÃ</th>
-                        <td class="coord-manha">EDUARDO HENRIQUE</td>
-                        <td class="coord-manha">SANDRO</td>
-                        <td class="coord-manha">ROBERTO CRISTIANO</td>
+                        <th class="th-periodo" style="background:#495057;">MANHÃ</th>                        
+                        <td class="coord-manha">EDUARDO HENRIQUE (11 99203-9890)</td>
+                        <td class="coord-manha">SANDRO (11 99415-0572)</td>
+                        <td class="coord-manha">ROBERTO CRISTIANO (11 97648-9839)</td>
                         <td class="coord-manha">RICARDO</td>
-                        <td class="coord-manha">EDUARDO HENRIQUE</td>
-                        <td class="coord-manha">EDUARDO HENRIQUE</td>
-                        <td class="coord-manha">FLAVIO MARROCO</td>
-                        <td class="coord-manha">ROBERTO CRISTIANO</td>
-                        <td class="coord-manha">LUCAS</td>
+                        <td class="coord-manha">EDUARDO HENRIQUE (11 99203-9890)</td>
+                        <td class="coord-manha">EDUARDO HENRIQUE (11 99203-9890)</td>
+                        <td class="coord-manha">FLAVIO MARROCO (11 98935-5344)</td>
+                        <td class="coord-manha">ROBERTO CRISTIANO (11 97648-9839)</td>
+                        <td class="coord-manha">LUCAS DO AMARAL (11 96308-0830)</td>
                         <td class="coord-manha">-</td>
-                        <td class="coord-manha">FERNANDO FONSECA</td>
-                        <td class="coord-manha">MARCIO BERNARDES</td>
+                        <td class="coord-manha">FERNANDO FONSECA (11 99492-5686)</td>
+                        <td class="coord-manha">MARCIO BERNARDES (11 99370-6514)</td>
                     </tr>
                     <tr>
                         <th class="th-periodo" style="background:#6c757d;">TARDE</th>
-                        <td class="coord-tarde">EDGAR</td>
-                        <td class="coord-tarde">ALESSANDRO</td>
-                        <td class="coord-tarde">ANTONIONE</td>
-                        <td class="coord-tarde">BRUNO MONTEIRO</td>
-                        <td class="coord-tarde">WILLIAM AZARA</td>
-                        <td class="coord-tarde">BRUNO MONTEIRO</td>
+                        <td class="coord-tarde">EDGAR NERY (11 97605-3368)</td>
+                        <td class="coord-tarde">ALESSANDRO CAMPOS (12 99145-4892)</td>
+                        <td class="coord-tarde">ANTONIONE SANTOS LOURENÇO (11 99362-9895)</td>
+                        <td class="coord-tarde">BRUNO MONTEIRO (11 99270-3650)</td>
+                        <td class="coord-tarde">WILLIAM AZARA (11 97563-3190)</td>
+                        <td class="coord-tarde">BRUNO MONTEIRO (11 99270-3650)</td>
                         <td class="coord-tarde">FERNANDO</td>
-                        <td class="coord-tarde">CLEITON</td>
+                        <td class="coord-tarde">CLEITON NERES (11 99449-8370)</td>
                         <td class="coord-tarde">FERNANDO</td>
-                        <td class="coord-tarde">RICARDO COSTA</td>
-                        <td class="coord-tarde">ROGÉRIO NORIO</td>
+                        <td class="coord-tarde">RICARDO COSTA (11 97645-7330)</td>
+                        <td class="coord-tarde">ROGÉRIO NORIO (11 97084-1066)</td>
                         <td class="coord-tarde">-</td>
                     </tr>
                 </thead>
