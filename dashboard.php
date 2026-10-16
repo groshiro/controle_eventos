@@ -719,7 +719,7 @@ try {
 
     <div class="tabs-container">
         <button class="tab-button active" onclick="openTab(event, 'tab-tabela')">📋 Lista de Incidentes</button>
-        <button class="tab-button" onclick="openTab(event, 'tab-graficos')">📊 Gráficos & Métricas</button>
+        <button class="tab-button" onclick="openTab(event, 'tab-graficos')">📊 Relatórios e Estatísticas</button>
         
         <?php if ($nivel_permissao_logado === 'admin'): ?>
             <button class="tab-button" onclick="openTab(event, 'tab-aprovacoes')">
