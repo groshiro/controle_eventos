@@ -320,7 +320,7 @@ require_once 'conexao.php';
 
         <!-- ABA 2: CRIAR CONTA -->
         <div id="painel-cadastro" class="painel-conteudo">
-            <form action="processar_usuario.php?acao=cadastrar" method="POST">
+            <form action="cadastro_usuario.php?acao=cadastrar" method="POST">
                 <div class="input-group">
                     <label for="cad_nome">Nome Completo</label>
                     <div class="input-wrapper">
