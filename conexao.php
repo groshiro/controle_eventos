@@ -12,7 +12,7 @@ $user = getenv('DB_USER') ?: 'usuario';
 $password = getenv('DB_PASSWORD') ?: 'InEB0P4jhfSXIbjEIOD7TJy8ZPcrBB5l';
 
 $pdo = null; 
-// $status_conexao = "Não conectado"; 
+ $status_conexao = "Não conectado"; 
 
 try {
     /**
@@ -27,7 +27,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 
-    // $status_conexao = "✅";
+     $status_conexao = "✅";
 
 } catch (PDOException $e) {
     $pdo = null;
