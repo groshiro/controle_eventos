@@ -27,7 +27,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 
-     $status_conexao = "✅";
+     $status_conexao = "✅ CONNECTED";
 
 } catch (PDOException $e) {
     $pdo = null;
