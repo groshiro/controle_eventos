@@ -271,10 +271,10 @@ require_once 'conexao.php';
     <div class="bg-animation"></div>
 
     <div class="card-redondo">
-        <div class="status-conexao">
+       /* <div class="status-conexao">
             <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
             <?php echo !empty($status_conexao) ? $status_conexao : 'SISTEMA SEGURO'; ?>
-        </div>
+        </div> */
 
         <!-- ABAS DE NAVEGAÇÃO -->
         <div class="tab-switch">
