@@ -12,7 +12,7 @@ $user = getenv('DB_USER') ?: 'usuario';
 $password = getenv('DB_PASSWORD') ?: 'InEB0P4jhfSXIbjEIOD7TJy8ZPcrBB5l';
 
 $pdo = null; 
-$status_conexao = "Não conectado"; 
+// $status_conexao = "Não conectado"; 
 
 try {
     /**
