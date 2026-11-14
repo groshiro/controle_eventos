@@ -65,7 +65,7 @@ if ($nivel_permissao_logado === 'admin' && $_SERVER['REQUEST_METHOD'] === 'POST'
 
 // Configurações da Paginação
 $limite_por_pagina = 300;
-$pagina_atual = $_GET['pagina'] ?? 1;
+$pagina_atual = max(1, (int)($_GET['pagina'] ?? 1));
 $offset = ($pagina_atual - 1) * $limite_por_pagina;
 
 $termo_busca = $_GET['termo_busca'] ?? '';
@@ -100,8 +100,57 @@ try {
     $total_usuarios = $pdo->query("SELECT COUNT(id) FROM usuario")->fetchColumn();
     $lista_usuarios = $pdo->query("SELECT id, nome, login, nivel_permissao FROM usuario ORDER BY id ASC")->fetchAll();
 
-    $sql_grafico_area = "SELECT COALESCE(NULLIF(area, ''), 'Não Informado') AS area, COUNT(id) AS total FROM controle GROUP BY area ORDER BY total DESC LIMIT 12";
+    // =========================================================================
+    // CONSULTAS PARA OS GRÁFICOS MODERNOS (PLOTLY.JS)
+    // =========================================================================
+
+    // 1. Top 12 Áreas com maior número de incidentes
+    $sql_grafico_area = "SELECT COALESCE(NULLIF(TRIM(area), ''), 'Não Informado') AS area, COUNT(id) AS total 
+                         FROM controle 
+                         GROUP BY area 
+                         ORDER BY total DESC 
+                         LIMIT 12";
     $dados_grafico_area = $pdo->query($sql_grafico_area)->fetchAll(PDO::FETCH_ASSOC);
+
+    // 2. Distribuição por Região (Top 10 Regiões)
+    $sql_grafico_regiao = "SELECT COALESCE(NULLIF(TRIM(regiao), ''), 'Não Informado') AS regiao, COUNT(id) AS total 
+                           FROM controle 
+                           GROUP BY regiao 
+                           ORDER BY total DESC 
+                           LIMIT 10";
+    $dados_grafico_regiao = $pdo->query($sql_grafico_regiao)->fetchAll(PDO::FETCH_ASSOC);
+
+    // 3. Top 10 Sites com mais incidentes (desconsiderando vazios ou '-')
+    $sql_grafico_site = "SELECT TRIM(site) AS site, COUNT(id) AS total 
+                         FROM controle 
+                         WHERE site IS NOT NULL AND TRIM(site) <> '' AND TRIM(site) <> '-'
+                         GROUP BY TRIM(site) 
+                         ORDER BY total DESC 
+                         LIMIT 10";
+    $dados_grafico_site = $pdo->query($sql_grafico_site)->fetchAll(PDO::FETCH_ASSOC);
+
+    // 4. Hierarquia Área -> Região (para gráfico Sunburst interativo)
+    $sql_hierarquia = "SELECT COALESCE(NULLIF(TRIM(area), ''), 'Não Informado') AS area,
+                              COALESCE(NULLIF(TRIM(regiao), ''), 'Não Informado') AS regiao,
+                              COUNT(id) AS total
+                       FROM controle
+                       GROUP BY area, regiao
+                       ORDER BY total DESC
+                       LIMIT 45";
+    $dados_hierarquia = $pdo->query($sql_hierarquia)->fetchAll(PDO::FETCH_ASSOC);
+
+    // 5. Evolução Diária de Cadastros (últimos 30 dias com registros)
+    $sql_evolucao = "SELECT dia, total FROM (
+                        SELECT TO_CHAR(data_cadastro::timestamp, 'YYYY-MM-DD') AS dia, COUNT(id) AS total 
+                        FROM controle 
+                        WHERE data_cadastro IS NOT NULL AND TRIM(CAST(data_cadastro AS TEXT)) <> ''
+                        GROUP BY dia 
+                        ORDER BY dia DESC 
+                        LIMIT 30
+                     ) sub ORDER BY dia ASC";
+    $dados_evolucao = $pdo->query($sql_evolucao)->fetchAll(PDO::FETCH_ASSOC);
+
+    // =========================================================================
 
     // Consulta de Usuários Pendentes e Bloqueados (para o Administrador)
     $lista_pendentes = [];
@@ -130,61 +179,208 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Sistema de Controle</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
     <script type="text/javascript">
-        google.charts.load('current', {
-            'packages': ['gauge', 'corechart']
-        });
-        
-        google.charts.setOnLoadCallback(drawCharts);
-
         function drawCharts() {
-            var dataGauge = google.visualization.arrayToDataTable([
-                ['Label', 'Value'],
-                ['Incidentes', <?php echo (int)$total_incidentes; ?>]
-            ]);
-            var optionsGauge = {
-                width: 400,
-                height: 120,
-                redFrom: 0,
-                redTo: 5000,
-                yellowFrom: 5001,
-                yellowTo: 15000,
-                greenFrom: 15001,
-                greenTo: 40000,
-                max: 40000
-            };
-            new google.visualization.Gauge(document.getElementById('chart_div')).draw(dataGauge, optionsGauge);
+            const totalIncidentes = <?php echo (int)$total_incidentes; ?>;
+            const dadosArea = <?php echo json_encode($dados_grafico_area, JSON_UNESCAPED_UNICODE); ?>;
+            const dadosRegiao = <?php echo json_encode($dados_grafico_regiao, JSON_UNESCAPED_UNICODE); ?>;
+            const dadosSite = <?php echo json_encode($dados_grafico_site, JSON_UNESCAPED_UNICODE); ?>;
+            const dadosHierarquia = <?php echo json_encode($dados_hierarquia, JSON_UNESCAPED_UNICODE); ?>;
+            const dadosEvolucao = <?php echo json_encode($dados_evolucao, JSON_UNESCAPED_UNICODE); ?>;
 
-            var dataArea = google.visualization.arrayToDataTable([
-                ['Área', 'Quantidade', { role: 'style' }, { role: 'annotation' }],
-                <?php 
-                $cores = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'];
-                $i = 0;
-                foreach ($dados_grafico_area as $linha) {
-                    $cor = $cores[$i % count($cores)];
-                    echo "['" . addslashes(htmlspecialchars($linha['area'])) . "', " . (int)$linha['total'] . ", '" . $cor . "', " . (int)$linha['total'] . "],";
-                    $i++;
-                }
-                ?>
-            ]);
+            const paletaCores = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6c757d', '#0d6efd', '#198754'];
 
-            var optionsArea = {
-                title: 'Top Áreas com Maior Número de Incidentes',
-                height: 420,
-                bar: { groupWidth: "55%" },
-                legend: { position: "none" },
-                hAxis: { title: 'Total de Incidentes', gridlines: { color: '#f0f0f0' } },
-                vAxis: { title: 'Área / Setor' },
-                backgroundColor: 'transparent',
-                annotations: {
-                    alwaysOutside: true,
-                    textStyle: { fontSize: 12, bold: true, color: '#333' }
-                }
+            const configPlotly = {
+                responsive: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
             };
 
-            var chartArea = new google.visualization.BarChart(document.getElementById('chart_area_div'));
-            chartArea.draw(dataArea, optionsArea);
+            // -----------------------------------------------------------------
+            // 1. GAUGE (VELOCÍMETRO MODERNO)
+            // -----------------------------------------------------------------
+            const traceGauge = [{
+                type: "indicator",
+                mode: "gauge+number",
+                value: totalIncidentes,
+                title: { text: "Volume Total de Incidentes", font: { size: 16, color: "#333", family: "Segoe UI" } },
+                number: { font: { size: 34, color: "#007bff", family: "Segoe UI" }, valueformat: ",d" },
+                gauge: {
+                    axis: { range: [0, 40000], tickwidth: 1, tickcolor: "#666" },
+                    bar: { color: "#007bff", thickness: 0.3 },
+                    bgcolor: "white",
+                    borderwidth: 1,
+                    bordercolor: "#ddd",
+                    steps: [
+                        { range: [0, 5000], color: "rgba(220, 53, 69, 0.25)" },
+                        { range: [5000, 15000], color: "rgba(255, 193, 7, 0.3)" },
+                        { range: [15000, 40000], color: "rgba(40, 167, 69, 0.25)" }
+                    ],
+                    threshold: {
+                        line: { color: "#e02810", width: 4 },
+                        thickness: 0.8,
+                        value: totalIncidentes
+                    }
+                }
+            }];
+            Plotly.newPlot('chart_div', traceGauge, {
+                height: 250,
+                margin: { t: 50, b: 15, l: 30, r: 30 },
+                paper_bgcolor: "transparent"
+            }, configPlotly);
+
+            // -----------------------------------------------------------------
+            // 2. ROSCA (DISTRIBUIÇÃO POR REGIÃO)
+            // -----------------------------------------------------------------
+            const traceRegiao = [{
+                type: 'pie',
+                hole: 0.48,
+                labels: dadosRegiao.map(d => d.regiao),
+                values: dadosRegiao.map(d => parseInt(d.total)),
+                textinfo: 'label+percent',
+                textposition: 'inside',
+                insidetextorientation: 'radial',
+                hovertemplate: '<b>Região: %{label}</b><br>Incidentes: %{value:,}<br>Participação: %{percent}<extra></extra>',
+                marker: { colors: paletaCores }
+            }];
+            Plotly.newPlot('chart_regiao_div', traceRegiao, {
+                title: { text: 'Distribuição por Região (Top 10)', font: { size: 16, color: '#333' } },
+                height: 360,
+                margin: { t: 50, b: 20, l: 20, r: 20 },
+                paper_bgcolor: 'transparent',
+                showlegend: true,
+                legend: { orientation: 'v', x: 1.0, y: 0.5 }
+            }, configPlotly);
+
+            // -----------------------------------------------------------------
+            // 3. BARRAS HORIZONTAIS (TOP 12 ÁREAS)
+            // -----------------------------------------------------------------
+            const areasInvertidas = [...dadosArea].reverse();
+            const traceArea = [{
+                type: 'bar',
+                orientation: 'h',
+                x: areasInvertidas.map(d => parseInt(d.total)),
+                y: areasInvertidas.map(d => d.area),
+                text: areasInvertidas.map(d => parseInt(d.total).toLocaleString('pt-BR')),
+                textposition: 'outside',
+                cliponaxis: false,
+                hovertemplate: '<b>Área: %{y}</b><br>Total: %{x:,} incidentes<extra></extra>',
+                marker: {
+                    color: areasInvertidas.map((_, idx) => paletaCores[(areasInvertidas.length - 1 - idx) % paletaCores.length]),
+                    line: { color: 'rgba(0,0,0,0.1)', width: 1 }
+                }
+            }];
+            Plotly.newPlot('chart_area_div', traceArea, {
+                title: { text: 'Top Áreas com Maior Número de Incidentes', font: { size: 16, color: '#333' } },
+                height: 440,
+                margin: { t: 50, b: 40, l: 140, r: 65 },
+                xaxis: { title: 'Total de Incidentes', gridcolor: '#eee' },
+                yaxis: { automargin: true },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, configPlotly);
+
+            // -----------------------------------------------------------------
+            // 4. SUNBURST INTERATIVO (HIERARQUIA ÁREA -> REGIÃO)
+            // -----------------------------------------------------------------
+            let ids = ['Total'];
+            let labels = ['Todas Áreas'];
+            let parents = [''];
+            let values = [0];
+
+            const mapaAreas = {};
+            dadosHierarquia.forEach(item => {
+                const qtd = parseInt(item.total);
+                mapaAreas[item.area] = (mapaAreas[item.area] || 0) + qtd;
+            });
+
+            let somaTotalSunburst = 0;
+            Object.keys(mapaAreas).forEach(area => {
+                ids.push('AREA_' + area);
+                labels.push(area);
+                parents.push('Total');
+                values.push(mapaAreas[area]);
+                somaTotalSunburst += mapaAreas[area];
+            });
+            values[0] = somaTotalSunburst;
+
+            dadosHierarquia.forEach(item => {
+                ids.push('REG_' + item.area + '_' + item.regiao);
+                labels.push(item.regiao);
+                parents.push('AREA_' + item.area);
+                values.push(parseInt(item.total));
+            });
+
+            const traceSunburst = [{
+                type: "sunburst",
+                ids: ids,
+                labels: labels,
+                parents: parents,
+                values: values,
+                branchvalues: "total",
+                maxdepth: 2,
+                hovertemplate: '<b>%{label}</b><br>Incidentes: %{value:,}<extra></extra>',
+                marker: { line: { width: 1.5, color: '#fff' } }
+            }];
+            Plotly.newPlot('chart_sunburst_div', traceSunburst, {
+                title: { text: 'Mapa Hierárquico: Área ➔ Região (Clique para expandir)', font: { size: 16, color: '#333' } },
+                height: 440,
+                margin: { t: 50, b: 15, l: 15, r: 15 },
+                paper_bgcolor: 'transparent'
+            }, configPlotly);
+
+            // -----------------------------------------------------------------
+            // 5. BARRAS HORIZONTAIS (TOP 10 SITES CRÍTICOS)
+            // -----------------------------------------------------------------
+            const sitesInvertidos = [...dadosSite].reverse();
+            const traceSite = [{
+                type: 'bar',
+                orientation: 'h',
+                x: sitesInvertidos.map(d => parseInt(d.total)),
+                y: sitesInvertidos.map(d => d.site),
+                text: sitesInvertidos.map(d => parseInt(d.total).toLocaleString('pt-BR')),
+                textposition: 'outside',
+                cliponaxis: false,
+                hovertemplate: '<b>Site: %{y}</b><br>Incidentes: %{x:,}<extra></extra>',
+                marker: { color: '#17a2b8' }
+            }];
+            Plotly.newPlot('chart_site_div', traceSite, {
+                title: { text: 'Top 10 Sites / Trechos com Mais Ocorrências', font: { size: 16, color: '#333' } },
+                height: 380,
+                margin: { t: 50, b: 40, l: 160, r: 60 },
+                xaxis: { title: 'Ocorrências', gridcolor: '#eee' },
+                yaxis: { automargin: true },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, configPlotly);
+
+            // -----------------------------------------------------------------
+            // 6. LINHA TEMPORAL (EVOLUÇÃO DIÁRIA DE CADASTROS)
+            // -----------------------------------------------------------------
+            const traceEvolucao = [{
+                type: 'scatter',
+                mode: 'lines+markers',
+                x: dadosEvolucao.map(d => d.dia),
+                y: dadosEvolucao.map(d => parseInt(d.total)),
+                line: { color: '#e02810', width: 3, shape: 'spline' },
+                marker: { size: 7, color: '#007bff' },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(224, 40, 16, 0.1)',
+                hovertemplate: '<b>Data: %{x}</b><br>Cadastros: %{y:,}<extra></extra>'
+            }];
+            Plotly.newPlot('chart_evolucao_div', traceEvolucao, {
+                title: { text: 'Evolução Diária de Incidentes Cadastrados (Últimos 30 dias ativos)', font: { size: 16, color: '#333' } },
+                height: 350,
+                margin: { t: 50, b: 55, l: 55, r: 30 },
+                xaxis: { title: 'Data do Cadastro', gridcolor: '#eee' },
+                yaxis: { title: 'Quantidade', gridcolor: '#eee' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent'
+            }, configPlotly);
         }
 
         function openTab(evt, tabName) {
@@ -201,7 +397,10 @@ try {
             evt.currentTarget.className += " active";
 
             if (tabName === 'tab-graficos') {
-                drawCharts();
+                setTimeout(() => {
+                    drawCharts();
+                    window.dispatchEvent(new Event('resize'));
+                }, 50);
             }
         }
     </script>
@@ -288,6 +487,33 @@ try {
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* GRID DE GRÁFICOS PLOTLY */
+        .grid-graficos-plotly {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .card-grafico-plotly {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+        }
+
+        .card-grafico-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 600px) {
+            .grid-graficos-plotly {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .badge-pendente {
             background-color: #e02810;
             color: white;
@@ -350,18 +576,6 @@ try {
         .tabela-container-scroll::-webkit-scrollbar-thumb {
             background: #007bff;
             border-radius: 10px;
-        }
-
-        #chart_area_div svg rect {
-            rx: 4px;
-            ry: 4px;
-            filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.25));
-            transition: all 0.3s ease;
-        }
-
-        #chart_area_div svg rect:hover {
-            filter: drop-shadow(5px 5px 6px rgba(0, 0, 0, 0.35));
-            cursor: pointer;
         }
 
         body {
@@ -525,7 +739,7 @@ try {
         }
 
         @media print {
-            nav, .tabs-container, .logout-container, .container-titulo, #form-busca, button, .btn-pesquisar, th:last-child, td:last-child, #chart_div, .header, .botoes-topo-container {
+            nav, .tabs-container, .logout-container, .container-titulo, #form-busca, button, .btn-pesquisar, th:last-child, td:last-child, .header, .botoes-topo-container {
                 display: none !important;
             }
             body { background: white !important; padding: 0; }
@@ -819,9 +1033,9 @@ try {
         </div>
     </div>
     
-    <!-- ABA 2: GRÁFICOS E ESTATÍSTICAS -->
+    <!-- ABA 2: GRÁFICOS E ESTATÍSTICAS (PLOTLY.JS) -->
     <div id="tab-graficos" class="tab-content">
-        <div class="card-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: rgba(255, 255, 255, 0.8); border-radius: 12px; max-width: 900px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div class="card-stats" style="text-align: center; padding: 25px; background-color: rgba(255, 255, 255, 0.85); border-radius: 12px; max-width: 1280px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
 
             <h4>PAINEL DE ESTATÍSTICAS E GRÁFICOS</h4>
 
@@ -847,17 +1061,39 @@ try {
                 </a>
             </div>
 
-            <div style="margin-bottom: 30px;">
-                <h5 style="color: #333; font-size: 1.1em;">Volume Total de Incidentes</h5>
-                <div id="chart_div" style="width: 400px; height: 120px; margin: 10px auto;"></div>
+            <!-- GRADE RESPONSIVA DE GRÁFICOS INTERATIVOS PLOTLY -->
+            <div class="grid-graficos-plotly">
+                <!-- 1. Velocímetro / Gauge -->
+                <div class="card-grafico-plotly">
+                    <div id="chart_div" style="width: 100%;"></div>
+                </div>
+
+                <!-- 2. Rosca por Região -->
+                <div class="card-grafico-plotly">
+                    <div id="chart_regiao_div" style="width: 100%;"></div>
+                </div>
+
+                <!-- 3. Barras Horizontais por Área -->
+                <div class="card-grafico-plotly">
+                    <div id="chart_area_div" style="width: 100%;"></div>
+                </div>
+
+                <!-- 4. Mapa Hierárquico Sunburst (Área -> Região) -->
+                <div class="card-grafico-plotly">
+                    <div id="chart_sunburst_div" style="width: 100%;"></div>
+                </div>
+
+                <!-- 5. Top 10 Sites Críticos -->
+                <div class="card-grafico-plotly">
+                    <div id="chart_site_div" style="width: 100%;"></div>
+                </div>
+
+                <!-- 6. Evolução Diária (Largura Total) -->
+                <div class="card-grafico-plotly card-grafico-full">
+                    <div id="chart_evolucao_div" style="width: 100%;"></div>
+                </div>
             </div>
 
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-
-            <div>
-                <h5 style="color: #333; font-size: 1.2em; margin-bottom: 10px;">Volume de Incidentes por Área</h5>
-                <div id="chart_area_div" style="width: 100%; height: 420px; margin: 0 auto;"></div>
-            </div>
         </div>
     </div>
 
