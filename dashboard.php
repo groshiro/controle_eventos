@@ -888,6 +888,27 @@ try {
             background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
         }
+        .card-stats h4 {
+        display: inline-block;
+        font-size: 1.4em;
+        color: #2c3e50;
+        letter-spacing: 1px;
+        padding: 10px 24px;
+        margin-bottom: 25px;
+        border-radius: 8px;
+        border-bottom: 3px solid #e67e22;
+        background-color: transparent;
+        transition: all 0.3s ease;
+        cursor: default;
+        }
+    
+        .card-stats h4:hover {
+            background-color: #34495e;
+            color: #ecf0f1;
+            border-bottom-color: #e67e22;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(52, 73, 94, 0.25);
+        }
     </style>
 </head>
 
