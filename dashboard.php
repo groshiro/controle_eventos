@@ -1058,7 +1058,7 @@ try {
     <div id="tab-graficos" class="tab-content">
         <div class="card-stats" style="text-align: center; padding: 25px; background-color: rgba(255, 255, 255, 0.85); border-radius: 12px; max-width: 1280px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
 
-            <h4>PAINEL DE ESTATÍSTICAS E GRÁFICOS</h4>
+            <h4>PAINEL DE ESTATÍSTICAS</h4>
 
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; gap: 15px;">
                 <p style="font-size: 1.1em; background-color: #34495e; color: #ecf0f1; padding: 12px 20px; border-radius: 8px; margin: 0;">
