@@ -10,75 +10,202 @@ require_once 'conexao.php';
     <title>Acesso ao Sistema | Histórico de Eventos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow-x: hidden;
-            background-color: #0f172a;
+            background-color: #060913;
             position: relative;
             padding: 20px;
+            color: #f8fafc;
         }
 
+        /* FUNDO COM ZOOM CINEMATOGRÁFICO */
         .bg-image {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('claro.png');
             background-size: cover;
             background-position: center;
-            opacity: 0.18;
+            opacity: 0.28;
             z-index: -3;
-            animation: zoomFundo 15s ease-in-out infinite alternate;
+            animation: zoomFundo 20s ease-in-out infinite alternate;
         }
 
         @keyframes zoomFundo {
             0% { transform: scale(1); }
-            100% { transform: scale(1.12); }
+            100% { transform: scale(1.1); }
         }
 
+        /* ILUMINAÇÃO AMBIENTE DINÂMICA */
         .bg-animation {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -2;
             background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 123, 255, 0.45) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(220, 53, 69, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(0, 183, 255, 0.3) 0%, transparent 60%);
-            filter: blur(45px) saturate(160%);
-            animation: moveColors 15s ease-in-out infinite alternate;
+                radial-gradient(circle at 22% 28%, rgba(0, 123, 255, 0.55) 0%, transparent 48%),
+                radial-gradient(circle at 78% 72%, rgba(224, 40, 16, 0.5) 0%, transparent 48%),
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.25) 0%, transparent 65%);
+            filter: blur(55px) saturate(165%);
+            animation: moveColors 14s ease-in-out infinite alternate;
         }
         
         @keyframes moveColors {
             0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-8%, 8%) scale(1.2); }
-            100% { transform: translate(8%, -8%) scale(1); }
+            50% { transform: translate(-5%, 5%) scale(1.12); }
+            100% { transform: translate(5%, -5%) scale(1); }
         }
 
-        /* CARD ULTRA-REDONDO COM GLASSMORPHISM */
+        /* MALHA DE PONTOS SUTIL (ESTÉTICA TECH / NOC) */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+        }
+
+        /* --- MINI PLAYER DE MÚSICA (DARK GLASS) --- */
+        .music-pill {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            padding: 8px 16px 8px 10px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .music-pill:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.45);
+            box-shadow: 0 16px 36px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-audio-toggle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #007bff 0%, #e02810 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(224, 40, 16, 0.4);
+            transition: transform 0.2s ease;
+        }
+
+        .btn-audio-toggle:hover {
+            transform: scale(1.08);
+        }
+
+        .music-meta {
+            display: flex;
+            flex-direction: column;
+            min-width: 95px;
+        }
+
+        .music-label {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.2;
+        }
+
+        .music-sub {
+            font-size: 10px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        /* EQUALIZADOR ANIMADO */
+        .eq-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2.5px;
+            height: 14px;
+            width: 16px;
+        }
+
+        .eq-bars span {
+            width: 3px;
+            height: 4px;
+            background: #38bdf8;
+            border-radius: 2px;
+            transition: height 0.2s ease;
+        }
+
+        .eq-bars.active span {
+            animation: eqPulse 0.7s ease-in-out infinite alternate;
+        }
+        .eq-bars.active span:nth-child(1) { animation-delay: 0.1s; background: #38bdf8; }
+        .eq-bars.active span:nth-child(2) { animation-delay: 0.3s; background: #f87171; }
+        .eq-bars.active span:nth-child(3) { animation-delay: 0.2s; background: #60a5fa; }
+
+        @keyframes eqPulse {
+            0% { height: 4px; }
+            100% { height: 14px; }
+        }
+
+        .volume-range {
+            -webkit-appearance: none;
+            width: 52px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+        }
+
+        /* --- CARD PRINCIPAL DARK GLASSMORPHISM --- */
         .card-redondo {
             position: relative;
             z-index: 1;
             width: 100%;
             max-width: 440px;
-            padding: 38px 34px;
-            background: rgba(255, 255, 255, 0.78);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 46px; /* Borda curva e suave */
-            border: 1px solid rgba(255, 255, 255, 0.95);
+            padding: 38px 34px 32px;
+            background: rgba(15, 23, 42, 0.62);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
             box-shadow: 
-                0 25px 60px rgba(0, 0, 0, 0.22),
-                inset 0 1px 2px rgba(255, 255, 255, 0.9);
-            animation: containerEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+                0 32px 70px rgba(0, 0, 0, 0.55),
+                inset 0 1px 1px rgba(255, 255, 255, 0.22);
+            animation: containerEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes containerEntrance {
@@ -86,39 +213,75 @@ require_once 'conexao.php';
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .status-conexao {
-            font-size: 11px;
-            color: #10b981;
+        /* CABEÇALHO DO SISTEMA (BRANDING) */
+        .brand-header {
             text-align: center;
-            margin-bottom: 12px;
-            letter-spacing: 1.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            display: flex;
+            margin-bottom: 24px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
+            padding: 5px 12px;
+            border-radius: 50px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            color: #34d399;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 8px #34d399;
+            animation: pulseLive 1.8s infinite;
+        }
+
+        @keyframes pulseLive {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .brand-title {
+            font-size: 21px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+            margin-bottom: 4px;
+        }
+
+        .brand-subtitle {
+            font-size: 12.5px;
+            color: #94a3b8;
+            font-weight: 400;
         }
 
         /* NAVEGAÇÃO POR ABAS PILL */
         .tab-switch {
             display: flex;
-            background: rgba(226, 232, 240, 0.7);
-            padding: 4px;
+            background: rgba(0, 0, 0, 0.38);
+            padding: 5px;
             border-radius: 50px;
             margin-bottom: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .tab-btn {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 10px 18px;
+            padding: 10.5px 16px;
             border-radius: 50px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
@@ -127,10 +290,14 @@ require_once 'conexao.php';
             gap: 6px;
         }
 
+        .tab-btn:hover:not(.active) {
+            color: #ffffff;
+        }
+
         .tab-btn.active {
-            background: #ffffff;
-            color: #007bff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
         }
 
         .input-group {
@@ -139,12 +306,13 @@ require_once 'conexao.php';
         }
 
         label {
-            color: #334155;
-            font-size: 12.5px;
+            color: #cbd5e1;
+            font-size: 12px;
             margin-bottom: 6px;
             display: block;
-            font-weight: 700;
-            padding-left: 6px;
+            font-weight: 600;
+            padding-left: 12px;
+            letter-spacing: 0.2px;
         }
 
         .input-wrapper {
@@ -155,93 +323,129 @@ require_once 'conexao.php';
 
         .input-icon {
             position: absolute;
-            left: 16px;
-            color: #94a3b8;
+            left: 17px;
+            color: #64748b;
             width: 18px;
             height: 18px;
             pointer-events: none;
+            transition: color 0.3s ease;
         }
 
-        input {
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
             width: 100%;
-            padding: 13px 16px 13px 44px;
-            border: 1.5px solid rgba(203, 213, 225, 0.85);
-            border-radius: 50px; /* Campos com acabamento arredondado */
-            background: rgba(255, 255, 255, 0.95);
+            padding: 13.5px 18px 13.5px 46px;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.06);
             font-size: 14px;
-            color: #1e293b;
+            color: #ffffff;
             font-weight: 500;
             transition: all 0.3s ease;
         }
 
-        input::placeholder { color: #94a3b8; }
+        input::placeholder { color: #64748b; }
 
         input:focus {
             outline: none;
-            border-color: #007bff;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.11);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: #38bdf8;
         }
 
         .toggle-password {
             position: absolute;
-            right: 16px;
+            right: 17px;
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #64748b;
             cursor: pointer;
             display: flex;
             align-items: center;
+            transition: color 0.2s ease;
         }
 
-        .toggle-password:hover { color: #007bff; }
+        .toggle-password:hover { color: #ffffff; }
 
+        /* BOTÃO PRINCIPAL COM EFEITO SHIMMER (BRILHO DESLIZANTE) */
         .btn-submit {
+            position: relative;
+            overflow: hidden;
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            padding: 14.5px;
+            background: linear-gradient(135deg, #007bff 0%, #0052cc 100%);
             color: white;
             border: none;
             border-radius: 50px;
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 18px rgba(0, 123, 255, 0.32);
-            margin-top: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(0, 123, 255, 0.38);
+            margin-top: 14px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
         }
 
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+            transform: skewX(-25deg);
+            transition: left 0.65s ease;
+        }
+
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 24px rgba(0, 123, 255, 0.42);
+            box-shadow: 0 14px 30px rgba(0, 123, 255, 0.52);
+        }
+
+        .btn-submit:hover::after {
+            left: 150%;
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
-            padding-top: 14px;
-            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .footer-links a {
             font-size: 12.5px;
-            color: #007bff;
+            color: #38bdf8;
             text-decoration: none;
-            font-weight: 700;
+            font-weight: 600;
+            transition: color 0.2s ease;
         }
 
-        .footer-links a:hover { text-decoration: underline; }
+        .footer-links a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
 
         #alerta-erro {
-            color: #dc2626;
-            background: rgba(254, 226, 226, 0.95);
-            border: 1px solid rgba(252, 165, 165, 0.5);
-            padding: 11px;
+            color: #fca5a5;
+            background: rgba(220, 38, 38, 0.22);
+            border: 1px solid rgba(248, 113, 113, 0.45);
+            padding: 11px 16px;
             border-radius: 50px;
             font-size: 12.5px;
             text-align: center;
@@ -251,9 +455,9 @@ require_once 'conexao.php';
         }
 
         #alerta-erro.alerta-aviso {
-            color: #92400e;
-            background: rgba(254, 243, 199, 0.95);
-            border: 1px solid rgba(252, 211, 77, 0.8);
+            color: #fde047;
+            background: rgba(234, 179, 8, 0.2);
+            border: 1px solid rgba(250, 204, 21, 0.45);
         }
 
         .painel-conteudo { display: none; }
@@ -263,26 +467,79 @@ require_once 'conexao.php';
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .system-footer {
+            margin-top: 22px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+            text-align: center;
+            letter-spacing: 0.4px;
+        }
+
+        @media (max-width: 520px) {
+            .music-pill {
+                top: 14px;
+                right: 50%;
+                transform: translateX(50%);
+                width: max-content;
+            }
+            .music-pill:hover {
+                transform: translateX(50%) translateY(-2px);
+            }
+            .card-redondo {
+                margin-top: 50px;
+                padding: 32px 24px 26px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="bg-image"></div>
     <div class="bg-animation"></div>
+    <div class="bg-grid"></div>
 
+    <!-- ÁUDIO DE ENTRADA -->
+    <audio id="musica-entrada" loop preload="auto">
+        <source src="Keane - Somewhere Only We Know.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- PLAYER DE MÚSICA FLUTUANTE -->
+    <div class="music-pill">
+        <button type="button" class="btn-audio-toggle" id="btn-audio" onclick="alternarMusica()" title="Tocar / Pausar som">
+            <i data-lucide="play" id="icone-audio" style="width: 15px; height: 15px; margin-left: 2px;"></i>
+        </button>
+
+        <div class="music-meta">
+            <span class="music-label">Áudio Ambiente</span>
+            <span class="music-sub" id="texto-status-audio">Ativar som</span>
+        </div>
+
+        <div class="eq-bars" id="barras-eq">
+            <span></span><span></span><span></span>
+        </div>
+
+        <input type="range" class="volume-range" id="controle-volume" min="0" max="1" step="0.05" value="0.5" title="Volume">
+    </div>
+
+    <!-- CARD CENTRAL -->
     <div class="card-redondo">
-       <!-- <div class="status-conexao">
-            <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
-            <?php echo !empty($status_conexao) ? $status_conexao : 'SISTEMA SEGURO'; ?>
-        </div> -->
+        <div class="brand-header">
+            <div class="brand-badge">
+                <span class="pulse-dot"></span>
+                <?php echo !empty($status_conexao) ? $status_conexao : 'Portal Operacional'; ?>
+            </div>
+            <h1 class="brand-title">Controle de Incidentes</h1>
+            <p class="brand-subtitle">Histórico de Eventos & Monitoramento de Rede</p>
+        </div>
 
         <!-- ABAS DE NAVEGAÇÃO -->
         <div class="tab-switch">
             <button type="button" class="tab-btn active" id="btn-tab-login" onclick="mudarAba('login')">
-                <i data-lucide="log-in" style="width: 16px; height: 16px;"></i> Acessar Conta
+                <i data-lucide="log-in" style="width: 15px; height: 15px;"></i> Acessar Conta
             </button>
             <button type="button" class="tab-btn" id="btn-tab-cadastro" onclick="mudarAba('cadastro')">
-                <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Criar Conta
+                <i data-lucide="user-plus" style="width: 15px; height: 15px;"></i> Criar Conta
             </button>
         </div>
 
@@ -309,7 +566,7 @@ require_once 'conexao.php';
                 </div>
 
                 <button type="submit" class="btn-submit">
-                    Entrar <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+                    Entrar <i data-lucide="door-open" style="width: 19px; height: 19px;"></i>
                 </button>
             </form>
 
@@ -356,7 +613,7 @@ require_once 'conexao.php';
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); box-shadow: 0 6px 18px rgba(22, 163, 74, 0.32);">
+                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);">
                     Solicitar Cadastro <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
                 </button>
             </form>
@@ -365,9 +622,74 @@ require_once 'conexao.php';
         <div id="alerta-erro"></div>
     </div>
 
+    <div class="system-footer">
+        Gestão de Incidentes &bull; Acesso Restrito e Monitorado
+    </div>
+
     <script>
         lucide.createIcons();
 
+        // --- PLAYER DE MÚSICA COM FADE-IN SUAVE ---
+        const audio = document.getElementById('musica-entrada');
+        const btnAudio = document.getElementById('btn-audio');
+        const textoAudio = document.getElementById('texto-status-audio');
+        const barrasEq = document.getElementById('barras-eq');
+        const controleVolume = document.getElementById('controle-volume');
+        let intervaloFade = null;
+
+        function iniciarComFadeIn(volumeAlvo) {
+            clearInterval(intervaloFade);
+            audio.volume = 0;
+            audio.play().then(() => {
+                atualizarEstadoPlayer(true);
+                intervaloFade = setInterval(() => {
+                    if (audio.volume < volumeAlvo - 0.05) {
+                        audio.volume = Math.min(volumeAlvo, audio.volume + 0.05);
+                    } else {
+                        audio.volume = volumeAlvo;
+                        clearInterval(intervaloFade);
+                    }
+                }, 80);
+            }).catch(() => {
+                atualizarEstadoPlayer(false);
+            });
+        }
+
+        function alternarMusica() {
+            if (audio.paused) {
+                iniciarComFadeIn(parseFloat(controleVolume.value));
+            } else {
+                clearInterval(intervaloFade);
+                audio.pause();
+                atualizarEstadoPlayer(false);
+            }
+        }
+
+        function atualizarEstadoPlayer(tocando) {
+            if (tocando) {
+                btnAudio.innerHTML = '<i data-lucide="pause" style="width: 15px; height: 15px;"></i>';
+                textoAudio.innerText = 'Tocando...';
+                textoAudio.style.color = '#38bdf8';
+                barrasEq.classList.add('active');
+            } else {
+                btnAudio.innerHTML = '<i data-lucide="play" style="width: 15px; height: 15px; margin-left: 2px;"></i>';
+                textoAudio.innerText = 'Pausado';
+                textoAudio.style.color = '#94a3b8';
+                barrasEq.classList.remove('active');
+            }
+            lucide.createIcons();
+        }
+
+        controleVolume.addEventListener('input', (e) => {
+            clearInterval(intervaloFade);
+            audio.volume = parseFloat(e.target.value);
+        });
+
+        window.addEventListener('load', () => {
+            iniciarComFadeIn(parseFloat(controleVolume.value));
+        });
+
+        // --- ALTERNÂNCIA DE ABAS ---
         function mudarAba(aba) {
             const painelLogin = document.getElementById('painel-login');
             const painelCadastro = document.getElementById('painel-cadastro');
@@ -391,6 +713,7 @@ require_once 'conexao.php';
             lucide.createIcons();
         }
 
+        // --- MOSTRAR / OCULTAR SENHA ---
         function togglePasswordVisibility(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -405,6 +728,7 @@ require_once 'conexao.php';
             lucide.createIcons();
         }
 
+        // --- ALERTAS DE ERRO E SUCESSO ---
         const params = new URLSearchParams(window.location.search);
         if (params.has('erro')) {
             const codigoErro = params.get('erro');
@@ -422,7 +746,7 @@ require_once 'conexao.php';
             else if (codigoErro === '6') {
                 mensagem = "⚠️ 2ª tentativa incorreta. Mais uma e seu acesso será bloqueado!";
                 alertaDiv.classList.add('alerta-aviso');
-            } else if (codigoErro === '7') mensagem = "🚫 Conta bloqueada por 3 tentativas incorretas.";
+            } else if (codigoErro === '7') mensagem = "🚫 Conta bloqueada por 3 tentativas incorretas. Contate o administrador.";
             else if (codigoErro === 'cadastro_sucesso') {
                 mensagem = "✅ Solicitação enviada! Aguarde a aprovação do administrador.";
                 alertaDiv.classList.add('alerta-aviso');
