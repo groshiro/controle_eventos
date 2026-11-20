@@ -104,19 +104,20 @@ try {
     // CONSULTAS PARA OS GRÁFICOS MODERNOS (PLOTLY.JS)
     // =========================================================================
 
-    // 1. Áreas com maior número de incidentes (padronizado)
+    // 1. Top 12 Áreas com maior número de incidentes
     $sql_grafico_area = "SELECT COALESCE(NULLIF(UPPER(TRIM(area)), ''), 'NÃO INFORMADO') AS area, COUNT(id) AS total 
                          FROM controle 
                          GROUP BY UPPER(TRIM(area)) 
-                         ORDER BY total DESC";
+                         ORDER BY total DESC 
+                         LIMIT 12";
     $dados_grafico_area = $pdo->query($sql_grafico_area)->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Distribuição por Região (Top 15 Regiões padronizadas)
+    // 2. Distribuição por Região (Top 10 Regiões)
     $sql_grafico_regiao = "SELECT COALESCE(NULLIF(UPPER(TRIM(regiao)), ''), 'NÃO INFORMADO') AS regiao, COUNT(id) AS total 
                            FROM controle 
                            GROUP BY UPPER(TRIM(regiao)) 
                            ORDER BY total DESC 
-                           LIMIT 15";
+                           LIMIT 10";
     $dados_grafico_regiao = $pdo->query($sql_grafico_regiao)->fetchAll(PDO::FETCH_ASSOC);
 
     // 3. Top 10 Sites com mais incidentes (desconsiderando vazios ou '-')
@@ -128,11 +129,18 @@ try {
                          LIMIT 10";
     $dados_grafico_site = $pdo->query($sql_grafico_site)->fetchAll(PDO::FETCH_ASSOC);
 
-    // 4. Hierarquia Área -> Região (TODAS as Áreas e Regiões sem LIMIT 45 e padronizadas)
+    // 4. Hierarquia Área -> Região (TODAS as regiões pertencentes apenas às Top 12 Áreas)
     $sql_hierarquia = "SELECT COALESCE(NULLIF(UPPER(TRIM(area)), ''), 'NÃO INFORMADO') AS area,
                               COALESCE(NULLIF(UPPER(TRIM(regiao)), ''), 'NÃO INFORMADO') AS regiao,
                               COUNT(id) AS total
                        FROM controle
+                       WHERE COALESCE(NULLIF(UPPER(TRIM(area)), ''), 'NÃO INFORMADO') IN (
+                           SELECT COALESCE(NULLIF(UPPER(TRIM(area)), ''), 'NÃO INFORMADO')
+                           FROM controle
+                           GROUP BY UPPER(TRIM(area))
+                           ORDER BY COUNT(id) DESC
+                           LIMIT 12
+                       )
                        GROUP BY UPPER(TRIM(area)), UPPER(TRIM(regiao))
                        ORDER BY total DESC";
     $dados_hierarquia = $pdo->query($sql_hierarquia)->fetchAll(PDO::FETCH_ASSOC);
@@ -246,7 +254,7 @@ try {
                 marker: { colors: paletaCores }
             }];
             Plotly.newPlot('chart_regiao_div', traceRegiao, {
-                title: { text: 'Distribuição por Região (Top 15)', font: { size: 16, color: '#333' } },
+                title: { text: 'Distribuição por Região (Top 10)', font: { size: 16, color: '#333' } },
                 height: 360,
                 margin: { t: 50, b: 20, l: 20, r: 20 },
                 paper_bgcolor: 'transparent',
@@ -255,7 +263,7 @@ try {
             }, configPlotly);
 
             // -----------------------------------------------------------------
-            // 3. BARRAS HORIZONTAIS (ÁREAS)
+            // 3. BARRAS HORIZONTAIS (TOP 12 ÁREAS)
             // -----------------------------------------------------------------
             const areasInvertidas = [...dadosArea].reverse();
             const traceArea = [{
@@ -273,7 +281,7 @@ try {
                 }
             }];
             Plotly.newPlot('chart_area_div', traceArea, {
-                title: { text: 'Áreas com Maior Número de Incidentes', font: { size: 16, color: '#333' } },
+                title: { text: 'Top 12 Áreas com Maior Número de Incidentes', font: { size: 16, color: '#333' } },
                 height: 440,
                 margin: { t: 50, b: 40, l: 140, r: 65 },
                 xaxis: { title: 'Total de Incidentes', gridcolor: '#eee' },
@@ -283,7 +291,7 @@ try {
             }, configPlotly);
 
             // -----------------------------------------------------------------
-            // 4. SUNBURST INTERATIVO (HIERARQUIA ÁREA -> REGIÃO COMPLETA)
+            // 4. SUNBURST INTERATIVO (HIERARQUIA TOP 12 ÁREAS -> TODAS REGIÕES)
             // -----------------------------------------------------------------
             let ids = ['Total'];
             let labels = ['Todas Áreas'];
