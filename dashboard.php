@@ -104,39 +104,37 @@ try {
     // CONSULTAS PARA OS GRÁFICOS MODERNOS (PLOTLY.JS)
     // =========================================================================
 
-    // 1. Top 12 Áreas com maior número de incidentes
-    $sql_grafico_area = "SELECT COALESCE(NULLIF(TRIM(area), ''), 'Não Informado') AS area, COUNT(id) AS total 
+    // 1. Áreas com maior número de incidentes (padronizado)
+    $sql_grafico_area = "SELECT COALESCE(NULLIF(UPPER(TRIM(area)), ''), 'NÃO INFORMADO') AS area, COUNT(id) AS total 
                          FROM controle 
-                         GROUP BY area 
-                         ORDER BY total DESC 
-                         LIMIT 12";
+                         GROUP BY UPPER(TRIM(area)) 
+                         ORDER BY total DESC";
     $dados_grafico_area = $pdo->query($sql_grafico_area)->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Distribuição por Região (Top 10 Regiões)
-    $sql_grafico_regiao = "SELECT COALESCE(NULLIF(TRIM(regiao), ''), 'Não Informado') AS regiao, COUNT(id) AS total 
+    // 2. Distribuição por Região (Top 15 Regiões padronizadas)
+    $sql_grafico_regiao = "SELECT COALESCE(NULLIF(UPPER(TRIM(regiao)), ''), 'NÃO INFORMADO') AS regiao, COUNT(id) AS total 
                            FROM controle 
-                           GROUP BY regiao 
+                           GROUP BY UPPER(TRIM(regiao)) 
                            ORDER BY total DESC 
-                           LIMIT 10";
+                           LIMIT 15";
     $dados_grafico_regiao = $pdo->query($sql_grafico_regiao)->fetchAll(PDO::FETCH_ASSOC);
 
     // 3. Top 10 Sites com mais incidentes (desconsiderando vazios ou '-')
-    $sql_grafico_site = "SELECT TRIM(site) AS site, COUNT(id) AS total 
+    $sql_grafico_site = "SELECT UPPER(TRIM(site)) AS site, COUNT(id) AS total 
                          FROM controle 
                          WHERE site IS NOT NULL AND TRIM(site) <> '' AND TRIM(site) <> '-'
-                         GROUP BY TRIM(site) 
+                         GROUP BY UPPER(TRIM(site)) 
                          ORDER BY total DESC 
                          LIMIT 10";
     $dados_grafico_site = $pdo->query($sql_grafico_site)->fetchAll(PDO::FETCH_ASSOC);
 
-    // 4. Hierarquia Área -> Região (para gráfico Sunburst interativo)
-    $sql_hierarquia = "SELECT COALESCE(NULLIF(TRIM(area), ''), 'Não Informado') AS area,
-                              COALESCE(NULLIF(TRIM(regiao), ''), 'Não Informado') AS regiao,
+    // 4. Hierarquia Área -> Região (TODAS as Áreas e Regiões sem LIMIT 45 e padronizadas)
+    $sql_hierarquia = "SELECT COALESCE(NULLIF(UPPER(TRIM(area)), ''), 'NÃO INFORMADO') AS area,
+                              COALESCE(NULLIF(UPPER(TRIM(regiao)), ''), 'NÃO INFORMADO') AS regiao,
                               COUNT(id) AS total
                        FROM controle
-                       GROUP BY area, regiao
-                       ORDER BY total DESC
-                       LIMIT 45";
+                       GROUP BY UPPER(TRIM(area)), UPPER(TRIM(regiao))
+                       ORDER BY total DESC";
     $dados_hierarquia = $pdo->query($sql_hierarquia)->fetchAll(PDO::FETCH_ASSOC);
 
     // 5. Evolução Diária de Cadastros (últimos 30 dias com registros)
@@ -248,7 +246,7 @@ try {
                 marker: { colors: paletaCores }
             }];
             Plotly.newPlot('chart_regiao_div', traceRegiao, {
-                title: { text: 'Distribuição por Região (Top 10)', font: { size: 16, color: '#333' } },
+                title: { text: 'Distribuição por Região (Top 15)', font: { size: 16, color: '#333' } },
                 height: 360,
                 margin: { t: 50, b: 20, l: 20, r: 20 },
                 paper_bgcolor: 'transparent',
@@ -257,7 +255,7 @@ try {
             }, configPlotly);
 
             // -----------------------------------------------------------------
-            // 3. BARRAS HORIZONTAIS (TOP 12 ÁREAS)
+            // 3. BARRAS HORIZONTAIS (ÁREAS)
             // -----------------------------------------------------------------
             const areasInvertidas = [...dadosArea].reverse();
             const traceArea = [{
@@ -275,7 +273,7 @@ try {
                 }
             }];
             Plotly.newPlot('chart_area_div', traceArea, {
-                title: { text: 'Top Áreas com Maior Número de Incidentes', font: { size: 16, color: '#333' } },
+                title: { text: 'Áreas com Maior Número de Incidentes', font: { size: 16, color: '#333' } },
                 height: 440,
                 margin: { t: 50, b: 40, l: 140, r: 65 },
                 xaxis: { title: 'Total de Incidentes', gridcolor: '#eee' },
@@ -285,7 +283,7 @@ try {
             }, configPlotly);
 
             // -----------------------------------------------------------------
-            // 4. SUNBURST INTERATIVO (HIERARQUIA ÁREA -> REGIÃO)
+            // 4. SUNBURST INTERATIVO (HIERARQUIA ÁREA -> REGIÃO COMPLETA)
             // -----------------------------------------------------------------
             let ids = ['Total'];
             let labels = ['Todas Áreas'];
@@ -294,8 +292,9 @@ try {
 
             const mapaAreas = {};
             dadosHierarquia.forEach(item => {
-                const qtd = parseInt(item.total);
-                mapaAreas[item.area] = (mapaAreas[item.area] || 0) + qtd;
+                const areaNome = String(item.area).trim();
+                const qtd = parseInt(item.total, 10) || 0;
+                mapaAreas[areaNome] = (mapaAreas[areaNome] || 0) + qtd;
             });
 
             let somaTotalSunburst = 0;
@@ -309,10 +308,14 @@ try {
             values[0] = somaTotalSunburst;
 
             dadosHierarquia.forEach(item => {
-                ids.push('REG_' + item.area + '_' + item.regiao);
-                labels.push(item.regiao);
-                parents.push('AREA_' + item.area);
-                values.push(parseInt(item.total));
+                const areaNome = String(item.area).trim();
+                const regiaoNome = String(item.regiao).trim();
+                const qtd = parseInt(item.total, 10) || 0;
+
+                ids.push('REG_' + areaNome + '_' + regiaoNome);
+                labels.push(regiaoNome);
+                parents.push('AREA_' + areaNome);
+                values.push(qtd);
             });
 
             const traceSunburst = [{
@@ -889,17 +892,17 @@ try {
             color: white;
         }
         .card-stats h4 {
-        display: inline-block;
-        font-size: 1.4em;
-        color: #2c3e50;
-        letter-spacing: 1px;
-        padding: 10px 24px;
-        margin-bottom: 25px;
-        border-radius: 8px;
-        border-bottom: 3px solid #e67e22;
-        background-color: transparent;
-        transition: all 0.3s ease;
-        cursor: default;
+            display: inline-block;
+            font-size: 1.4em;
+            color: #2c3e50;
+            letter-spacing: 1px;
+            padding: 10px 24px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            border-bottom: 3px solid #e67e22;
+            background-color: transparent;
+            transition: all 0.3s ease;
+            cursor: default;
         }
     
         .card-stats h4:hover {
