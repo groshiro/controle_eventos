@@ -360,7 +360,7 @@ try {
                 marker: { color: '#17a2b8' }
             }];
             Plotly.newPlot('chart_site_div', traceSite, {
-                title: { text: 'Top 10 Sites / Trechos com Mais Ocorrências', font: { size: 16, color: '#333' } },
+                title: { text: 'Top 10 Pontos de Testes Mais Acessados', font: { size: 16, color: '#333' } },
                 height: 380,
                 margin: { t: 50, b: 40, l: 160, r: 60 },
                 xaxis: { title: 'Ocorrências', gridcolor: '#eee' },
@@ -1115,7 +1115,7 @@ try {
                     <div id="chart_sunburst_div" style="width: 100%;"></div>
                 </div>
 
-                <!-- 5. Top 10 Sites Críticos -->
+                <!-- 5. Top 10 Pontos de Testes Mais Acessados -->
                 <div class="card-grafico-plotly">
                     <div id="chart_site_div" style="width: 100%;"></div>
                 </div>
@@ -1279,3 +1279,4 @@ try {
 </body>
 
 </html>
+
