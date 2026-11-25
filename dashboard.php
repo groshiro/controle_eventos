@@ -26,8 +26,52 @@ if (!isset($pdo) || $pdo === null) {
 
 $pdo->exec("SET NAMES 'UTF8'");
 
-$nome_do_usuario = $_SESSION['nome_completo'] ?? $_SESSION['usuario_logado'] ?? 'Usuário';
+$login_atual_sessao = $_SESSION['usuario_logado'];
+$nome_do_usuario = $_SESSION['nome_completo'] ?? $login_atual_sessao ?? 'Usuário';
 $nivel_permissao_logado = strtolower($_SESSION['nivel_permissao'] ?? $_SESSION['permissao'] ?? 'user');
+
+// =========================================================================
+// REGISTRO AUTOMÁTICO DE ACESSO (LOGIN + IP REAL) NA SESSÃO ATUAL
+// =========================================================================
+if (!isset($_SESSION['acesso_registrado'])) {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $ip_usuario = trim($ips[0]);
+    } else {
+        $ip_usuario = $_SERVER['REMOTE_ADDR'] ?? 'Desconhecido';
+    }
+
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $uid_sessao = $_SESSION['usuario_id'] ?? null;
+
+    if (!$uid_sessao) {
+        try {
+            $stmt_uid = $pdo->prepare("SELECT id FROM usuario WHERE login = :login LIMIT 1");
+            $stmt_uid->execute(['login' => $login_atual_sessao]);
+            $uid_sessao = $stmt_uid->fetchColumn() ?: null;
+            if ($uid_sessao) {
+                $_SESSION['usuario_id'] = $uid_sessao;
+            }
+        } catch (PDOException $e) {
+            $uid_sessao = null;
+        }
+    }
+
+    try {
+        $stmt_log = $pdo->prepare("INSERT INTO log_acessos (usuario_id, login, nome, ip_acesso, user_agent, data_acesso) 
+                                   VALUES (:uid, :login, :nome, :ip, :ua, NOW())");
+        $stmt_log->execute([
+            'uid'   => $uid_sessao,
+            'login' => $login_atual_sessao,
+            'nome'  => $nome_do_usuario,
+            'ip'    => $ip_usuario,
+            'ua'    => $user_agent
+        ]);
+        $_SESSION['acesso_registrado'] = true;
+    } catch (PDOException $e) {
+        // Não interrompe o carregamento do dashboard se houver falha no log
+    }
+}
 
 $msg_admin = null;
 $msg_admin_tipo = 'sucesso';
@@ -74,7 +118,7 @@ $params = [];
 
 if (!empty($termo_busca)) {
     $termo_sql = "%" . $termo_busca . "%";
-    $where_clause = " WHERE incidente ILIKE :termo OR evento ILIKE :termo OR endereco ILIKE :termo OR area ILIKE :termo OR regiao ILIKE :termo OR site ILIKE :termo OR otdr ILIKE :termo OR CAST(id AS TEXT) ILIKE :termo";
+    $where_clause = " WHERE incidente ILIKE :termo OR evento ILIKE :termo OR endereco ILIKE :termo OR area ILIKE :termo OR regiao ILIKE :termo OR site ILIKE :termo OR otdr ILIKE :termo OR criado_por ILIKE :termo OR CAST(id AS TEXT) ILIKE :termo";
     $params['termo'] = $termo_sql;
 }
 
@@ -83,7 +127,7 @@ try {
     $total_registros_bd = $pdo->query($sql_total_geral)->fetchColumn();
     $total_paginas = ceil($total_registros_bd / $limite_por_pagina);
 
-    $sql_consulta = "SELECT id, data_cadastro, incidente, evento, endereco, area, regiao, site, otdr FROM controle" . $where_clause . " ORDER BY id LIMIT :limite OFFSET :offset";
+    $sql_consulta = "SELECT id, data_cadastro, incidente, evento, endereco, area, regiao, site, otdr, criado_por FROM controle" . $where_clause . " ORDER BY id LIMIT :limite OFFSET :offset";
     $stmt_consulta = $pdo->prepare($sql_consulta);
     $stmt_consulta->bindValue(':limite', (int)$limite_por_pagina, PDO::PARAM_INT);
     $stmt_consulta->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
@@ -120,7 +164,7 @@ try {
                            LIMIT 10";
     $dados_grafico_regiao = $pdo->query($sql_grafico_regiao)->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Top 10 Sites com mais incidentes (desconsiderando vazios ou '-')
+    // 3. Top 10 Pontos de Testes com mais incidentes (desconsiderando vazios ou '-')
     $sql_grafico_site = "SELECT UPPER(TRIM(site)) AS site, COUNT(id) AS total 
                          FROM controle 
                          WHERE site IS NOT NULL AND TRIM(site) <> '' AND TRIM(site) <> '-'
@@ -158,11 +202,12 @@ try {
 
     // =========================================================================
 
-    // Consulta de Usuários Pendentes e Bloqueados (para o Administrador)
+    // Consulta de Usuários Pendentes, Bloqueados e Histórico de Acessos (para o Administrador)
     $lista_pendentes = [];
     $total_pendentes = 0;
     $lista_bloqueados = [];
     $total_bloqueados = 0;
+    $lista_acessos = [];
 
     if ($nivel_permissao_logado === 'admin') {
         $stmt_pendentes = $pdo->query("SELECT id, nome, login, email, nivel_permissao FROM usuario WHERE status = 'PENDENTE' ORDER BY id ASC");
@@ -172,6 +217,16 @@ try {
         $stmt_bloqueados = $pdo->query("SELECT id, nome, login, email, tentativas_login FROM usuario WHERE status = 'BLOQUEADO' ORDER BY id ASC");
         $lista_bloqueados = $stmt_bloqueados->fetchAll(PDO::FETCH_ASSOC);
         $total_bloqueados = count($lista_bloqueados);
+
+        try {
+            $stmt_acessos = $pdo->query("SELECT id, usuario_id, login, nome, ip_acesso, user_agent, data_acesso 
+                                         FROM log_acessos 
+                                         ORDER BY data_acesso DESC 
+                                         LIMIT 200");
+            $lista_acessos = $stmt_acessos->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $lista_acessos = [];
+        }
     }
 
 } catch (PDOException $e) {
@@ -345,7 +400,7 @@ try {
             }, configPlotly);
 
             // -----------------------------------------------------------------
-            // 5. BARRAS HORIZONTAIS (TOP 10 SITES CRÍTICOS)
+            // 5. BARRAS HORIZONTAIS (TOP 10 PONTOS DE TESTES MAIS ACESSADOS)
             // -----------------------------------------------------------------
             const sitesInvertidos = [...dadosSite].reverse();
             const traceSite = [{
@@ -974,6 +1029,10 @@ try {
                     <span class="badge-pendente"><?php echo ($total_pendentes + $total_bloqueados); ?></span>
                 <?php endif; ?>
             </button>
+
+            <button class="tab-button" onclick="openTab(event, 'tab-acessos')">
+                🛡️ Histórico de Logins / IPs
+            </button>
         <?php endif; ?>
     </div>
 
@@ -1008,6 +1067,7 @@ try {
                         <th>Região</th>
                         <th>Site</th>
                         <th>OTDR</th>
+                        <th>Cadastrado por</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -1022,6 +1082,7 @@ try {
                             <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
                             <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
                             <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
+                            <td><strong><?php echo !empty($c['criado_por']) ? htmlspecialchars($c['criado_por']) : htmlspecialchars($login_atual_sessao); ?></strong></td>
                             <td>
                                 <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> |
                                 <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
@@ -1241,6 +1302,57 @@ try {
             <?php endif; ?>
 
         </div>
+
+        <!-- ABA 4: HISTÓRICO DE LOGINS E IPs -->
+        <div id="tab-acessos" class="tab-content">
+            <h3 id="titulo-incidentes">Histórico de Logins e Endereços IP</h3>
+
+            <div class="card-info-pagina" style="border-left-color: #17a2b8;">
+                Acessos registrados (últimos 200): 
+                <span style="font-size: 1.4em; color: #007bff; font-weight: 900; margin-left: 5px;">
+                    <?php echo count($lista_acessos); ?>
+                </span>
+            </div>
+
+            <div class="tabela-container-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Data / Hora</th>
+                            <th>Login</th>
+                            <th>Nome</th>
+                            <th>Endereço IP</th>
+                            <th>Navegador / Dispositivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($lista_acessos)): ?>
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #666; font-weight: 600;">Nenhum acesso registrado ainda.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($lista_acessos as $ac): ?>
+                                <tr>
+                                    <td><?php echo $ac['id']; ?></td>
+                                    <td><?php echo date('d/m/Y H:i:s', strtotime($ac['data_acesso'])); ?></td>
+                                    <td><strong><?php echo htmlspecialchars($ac['login']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($ac['nome'] ?? '-'); ?></td>
+                                    <td>
+                                        <span style="background: #e9ecef; padding: 3px 8px; border-radius: 5px; font-family: monospace; font-weight: bold;">
+                                            <?php echo htmlspecialchars($ac['ip_acesso']); ?>
+                                        </span>
+                                    </td>
+                                    <td style="font-size: 0.85em; color: #555; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($ac['user_agent'] ?? ''); ?>">
+                                        <?php echo htmlspecialchars($ac['user_agent'] ?? '-'); ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     <?php endif; ?>
 
     <!-- Modal de Erro -->
@@ -1279,4 +1391,3 @@ try {
 </body>
 
 </html>
-
