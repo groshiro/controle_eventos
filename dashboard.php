@@ -1067,7 +1067,7 @@ try {
                         <th>Região</th>
                         <th>Site</th>
                         <th>OTDR</th>
-                        <th>Cadastrado por</th>
+                        <!-- <th>Cadastrado por</th> -->
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -1082,7 +1082,7 @@ try {
                             <td><?php echo !empty($c['regiao']) ? htmlspecialchars($c['regiao']) : '-'; ?></td>
                             <td><?php echo !empty($c['site']) ? htmlspecialchars($c['site']) : '-'; ?></td>
                             <td><?php echo !empty($c['otdr']) ? htmlspecialchars($c['otdr']) : '-'; ?></td>
-                            <td><strong><?php echo !empty($c['criado_por']) ? htmlspecialchars($c['criado_por']) : htmlspecialchars($login_atual_sessao); ?></strong></td>
+                            <!-- <td><strong><?php echo !empty($c['criado_por']) ? htmlspecialchars($c['criado_por']) : htmlspecialchars($login_atual_sessao); ?></strong></td> -->
                             <td>
                                 <a href="alterar.php?id=<?php echo $c['id']; ?>" style="color:blue; font-weight:bold;">Editar</a> |
                                 <a href="processar_crud.php?acao=excluir&id=<?php echo $c['id']; ?>" onclick="return confirm('Excluir?')" style="color:red; font-weight:bold;">Excluir</a>
