@@ -1,5 +1,14 @@
 <?php
 // Arquivo: cadastro.php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['usuario_logado'])) {
+    header("Location: index.php");
+    exit();
+}
+
 require_once 'conexao.php'; 
 
 $mensagem = "";
@@ -11,7 +20,6 @@ if ($pdo) {
         $stmt_sites = $pdo->query("SELECT DISTINCT site FROM controle WHERE site IS NOT NULL AND TRIM(site) != '' AND site != '-' ORDER BY site ASC");
         $sites_predefinidos = $stmt_sites->fetchAll(PDO::FETCH_COLUMN);
     } catch (PDOException $e) {
-        // Se falhar a leitura, a lista apenas fica vazia sem travar a tela
         $sites_predefinidos = [];
     }
 }
@@ -26,6 +34,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $site      = trim($_POST['site'] ?? '');
     $otdr      = trim($_POST['otdr'] ?? '');
 
+    // 3. Captura o login real do usuário da sessão ativa (nunca o USER do conexao.php)
+    $valor_sessao      = $_SESSION['login'] ?? $_SESSION['usuario_logado'] ?? '';
+    $id_usuario_sessao = $_SESSION['usuario_id'] ?? $_SESSION['id_usuario'] ?? null;
+    $login_sessao      = $valor_sessao;
+
+    if ($pdo) {
+        try {
+            if ($id_usuario_sessao) {
+                $stmt_u = $pdo->prepare("SELECT id, login FROM usuario WHERE id = :id LIMIT 1");
+                $stmt_u->execute(['id' => $id_usuario_sessao]);
+            } else {
+                $stmt_u = $pdo->prepare("SELECT id, login FROM usuario WHERE login = :val OR nome = :val LIMIT 1");
+                $stmt_u->execute(['val' => $valor_sessao]);
+            }
+            $dados_u = $stmt_u->fetch(PDO::FETCH_ASSOC);
+            if ($dados_u) {
+                $id_usuario_sessao = $dados_u['id'];
+                $login_sessao      = $dados_u['login'];
+            }
+        } catch (PDOException $e) {
+            // Mantém o valor da sessão em caso de falha na consulta auxiliar
+        }
+    }
+
     // Define a data e hora atual
     $data_cadastro = date('Y-m-d H:i:s'); 
         
@@ -35,11 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensagem = "⚠️ Preencha todos os campos.";
     } else {
         try {
-            // 3. INSERÇÃO SEGURA na tabela 'controle'
+            // 4. INSERÇÃO SEGURA na tabela 'controle' gravando usuario_id e criado_por
             $sql_insert = "INSERT INTO controle 
-                           (incidente, evento, endereco, area, regiao, site, otdr, data_cadastro) 
+                           (incidente, evento, endereco, area, regiao, site, otdr, data_cadastro, usuario_id, criado_por) 
                            VALUES 
-                           (:incidente_ph, :evento_ph, :endereco_ph, :area_ph, :regiao_ph, :site_ph, :otdr_ph, :data_cadastro_ph)";
+                           (:incidente_ph, :evento_ph, :endereco_ph, :area_ph, :regiao_ph, :site_ph, :otdr_ph, :data_cadastro_ph, :usuario_id_ph, :criado_por_ph)";
                            
             $stmt = $pdo->prepare($sql_insert);
 
@@ -51,7 +83,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'regiao_ph'        => $regiao,
                 'site_ph'          => $site,
                 'otdr_ph'          => $otdr,
-                'data_cadastro_ph' => $data_cadastro
+                'data_cadastro_ph' => $data_cadastro,
+                'usuario_id_ph'    => $id_usuario_sessao,
+                'criado_por_ph'    => $login_sessao
             ]);
             
             // Redireciona com status de sucesso
@@ -255,54 +289,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="endereco">Endereço:</label>
             <input type="text" name="endereco" placeholder="Rua, Avenida, Alameda...." required>
 
-            <label for="area">Área:</label><br>
-                <input type="text"
-                       name="area"
-                       id="area"
-                       list="lista-areas"
-                       placeholder="Cluster"
-                       required>
-                
-                <datalist id="lista-areas">
-                    <option value="LESTE_1">
-                    <option value="LESTE_2">
-                    <option value="LESTE_3">
-                    <option value="NORTE_1">
-                    <option value="NORTE_2">
-                    <option value="NORTE_3">
-                    <option value="SUL_1">
-                    <option value="SUL_2">
-                    <option value="SUL_3">
-                    <option value="ABCDM">
-                    <option value="METRO_LESTE">
-                    <option value="METRO_OESTE">
-                </datalist>
-                
-                <script>
-                document.querySelector("form").addEventListener("submit", function(e) {
-                
-                    const permitidos = [
-                        "LESTE_1","LESTE_2","LESTE_3",
-                        "NORTE_1","NORTE_2","NORTE_3",
-                        "SUL_1","SUL_2","SUL_3",
-                        "ABCDM","METRO_LESTE","METRO_OESTE"
-                    ];
-        
-                    const area = document.getElementById("area").value.trim();
-                
-                    if (!permitidos.includes(area)) {
-                        alert("Selecione uma área válida da lista.");
-                        e.preventDefault();
-                    }
-                });
-                </script>
-                    
+            <label for="area">Área:</label>
+            <input type="text"
+                   name="area"
+                   id="area"
+                   list="lista-areas"
+                   placeholder="Cluster"
+                   required>
+            
+            <datalist id="lista-areas">
+                <option value="LESTE_1">
+                <option value="LESTE_2">
+                <option value="LESTE_3">
+                <option value="NORTE_1">
+                <option value="NORTE_2">
+                <option value="NORTE_3">
+                <option value="SUL_1">
+                <option value="SUL_2">
+                <option value="SUL_3">
+                <option value="ABCDM">
+                <option value="METRO_LESTE">
+                <option value="METRO_OESTE">
+            </datalist>
+            
+            <script>
+            document.querySelector("form").addEventListener("submit", function(e) {
+                const permitidos = [
+                    "LESTE_1","LESTE_2","LESTE_3",
+                    "NORTE_1","NORTE_2","NORTE_3",
+                    "SUL_1","SUL_2","SUL_3",
+                    "ABCDM","METRO_LESTE","METRO_OESTE"
+                ];
+    
+                const area = document.getElementById("area").value.trim();
+            
+                if (!permitidos.includes(area)) {
+                    alert("Selecione uma área válida da lista.");
+                    e.preventDefault();
+                }
+            });
+            </script>
 
             <label for="regiao">Região:</label>
             <input type="text" name="regiao" placeholder="Cidade, Bairro" required>
 
             <label for="site">Site:</label>
-            <!-- Campo com datalist para permitir digitação livre OU seleção pré-definida -->
             <input type="text" name="site" id="site" list="lista-sites" placeholder="Selecione ou digite o site/estação" autocomplete="off" required>
             <datalist id="lista-sites">
                 <?php foreach ($sites_predefinidos as $item_site): ?>
